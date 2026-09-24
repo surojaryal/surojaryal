@@ -60,9 +60,10 @@
     return { session: s, type: h.get("type") || "" };
   }
   async function setPassword(s, password) {
-    const u = await authFetch("/user", { password, _method: "PUT" }, s.access_token);
+    const u = await authFetch("/user", { password, data: { must_change_password: false }, _method: "PUT" }, s.access_token);
     s.email = u.email || s.email; writeSession(s); return s;
   }
+  async function getUser(s) { return authFetch("/user", undefined, s.access_token); }
 
   /* PostgREST on the ops schema */
   async function api(method, path, body, extraHeaders) {
@@ -90,5 +91,5 @@
     }
   }
 
-  window.HAVCloud = { enabled, config: CFG, readSession, session, signIn, signOut, requestReset, sessionFromUrl, setPassword, api, all };
+  window.HAVCloud = { enabled, config: CFG, readSession, session, signIn, signOut, requestReset, sessionFromUrl, setPassword, getUser, api, all };
 })();

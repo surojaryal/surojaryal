@@ -275,7 +275,7 @@
   function renderNav() {
     const cur = location.hash || "#/";
     const viewKey = (cur.match(/^#\/view\/([^/]+)/) || [])[1];
-    $("#nav").innerHTML = (CLOUD ? `<div class="nav-account"><span title="Signed in">${esc(USER)}</span><button type="button" class="link" id="signout">Sign out</button></div>` : "") + `<form class="nav-search" id="navsearch" role="search"><input type="search" id="navq" placeholder="Search everything" aria-label="Search everything"></form>` + NAV.map(([g, items]) =>
+    $("#nav").innerHTML = (CLOUD ? `<div class="nav-account"><span title="Signed in">${esc(USER)}</span><span class="nav-acts"><button type="button" class="link" id="chpw">Password</button><button type="button" class="link" id="signout">Sign out</button></span></div>` : "") + `<form class="nav-search" id="navsearch" role="search"><input type="search" id="navq" placeholder="Search everything" aria-label="Search everything"></form>` + NAV.map(([g, items]) =>
       `<div class="nav-group"><div class="nav-label">${g}</div>` +
       items.map(([href, label, temp]) => {
         const active = cur === href || (href !== "#/" && cur.startsWith(href + "/")) || (viewKey && href === "#/r/" + viewKey);
@@ -290,6 +290,8 @@
       try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(SNAP_KEY); sessionStorage.clear(); } catch (_) { }
       await HAVCloud.signOut(); location.replace(location.pathname);
     });
+    const cp = $("#chpw");
+    if (cp) cp.addEventListener("click", openChangePassword);
     renderSync();
     $("#navsearch").addEventListener("submit", e => { e.preventDefault(); const q = $("#navq").value.trim(); if (q) location.hash = "#/search/" + encodeURIComponent(q); });
     $("#temp-pill").className = "pill " + (tempLive() ? "go" : "off");
@@ -595,6 +597,27 @@
       const c = tl.closest(".card").querySelector(".count"); if (c) c.textContent = tl.children.length;
       if (!tl.children.length) tl.insertAdjacentHTML("afterend", `<p class="muted">No activity yet. Use <strong>Log activity</strong> to record calls, emails, meetings and notes.</p>`);
     } catch (_) { /* history is optional; the page works without it */ }
+  }
+
+  function openChangePassword() {
+    const dlg = $("#dlg");
+    dlg.innerHTML = `<form method="dialog" id="pw-form">
+      <div class="dlg-head"><h2>Change password</h2><button type="button" class="x" data-close aria-label="Close">×</button></div>
+      <div class="dlg-body"><div class="form-grid">
+        <label class="fld"><span>New password *</span><input type="password" name="p1" minlength="12" autocomplete="new-password" required></label>
+        <label class="fld"><span>Confirm password *</span><input type="password" name="p2" minlength="12" autocomplete="new-password" required></label>
+      </div><p class="muted small">At least 12 characters. A few unrelated words with a number works well. Other devices stay signed in.</p><p class="form-err" id="ferr" role="alert"></p></div>
+      <div class="dlg-foot"><span class="spacer"></span><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn">Save password</button></div></form>`;
+    const form = $("#pw-form");
+    form.addEventListener("submit", async e => {
+      e.preventDefault(); if (!form.reportValidity()) return;
+      const p1 = form.p1.value, p2 = form.p2.value;
+      if (p1 !== p2) { $("#ferr").textContent = "The two passwords do not match."; return; }
+      try { const s = await HAVCloud.session(); await HAVCloud.setPassword(s, p1); dlg.close(); toast("Password changed"); }
+      catch (err) { $("#ferr").textContent = err.message || "Could not change password."; }
+    });
+    dlg.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => dlg.close()));
+    dlg.showModal();
   }
 
   function openActivity(key, id) {

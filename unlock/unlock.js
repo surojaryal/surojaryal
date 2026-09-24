@@ -49,7 +49,12 @@
     const params = new URLSearchParams(location.hash.replace(/^#/, ""));
     if (params.get("error_description")) { show("f-signin"); err(params.get("error_description").replace(/\+/g, " ") + ". Ask for a new link."); history.replaceState(null, "", location.pathname); return; }
     if (HAVCloud.readSession()) {
-      try { await HAVCloud.session(); await openSite(); return; }
+      try {
+        const s = await HAVCloud.session();
+        const u = await HAVCloud.getUser(s).catch(() => null);
+        if (u && u.user_metadata && u.user_metadata.must_change_password) { pendingSession = s; $("setpw-intro").textContent = "Please choose your own password to continue."; show("f-setpw"); $("np1").focus(); return; }
+        await openSite(); return;
+      }
       catch (e) { show("f-signin"); if (e.status !== 401) err(friendly(e)); }
     } else show("f-signin");
     const last = (() => { try { return localStorage.getItem("hav-last-email") || ""; } catch (_) { return ""; } })();
@@ -61,8 +66,14 @@
     const email = $("em").value.trim();
     busy("Signing in…");
     try {
-      await HAVCloud.signIn(email, $("pw").value);
+      const s = await HAVCloud.signIn(email, $("pw").value);
       try { localStorage.setItem("hav-last-email", email.toLowerCase()); } catch (_) { }
+      const u = await HAVCloud.getUser(s).catch(() => null);
+      if (u && u.user_metadata && u.user_metadata.must_change_password) {
+        pendingSession = s;
+        $("setpw-intro").textContent = "You signed in with a temporary password. Please choose your own password now.";
+        show("f-setpw"); $("np1").focus(); return;
+      }
       await openSite();
     } catch (e) { show("f-signin"); err(friendly(e)); $("pw").select(); }
   });

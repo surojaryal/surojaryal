@@ -16,7 +16,17 @@ It turns the Haverton Recruitment Master Operating System v2.0 (21 September 202
 | Finance | Three year base case and Year 1 monthly plan, recalculated from the Financial Model assumptions, plus scenarios and pricing calculators |
 | Sources | Legal framework and official source register with review dates |
 
-## How data is stored
+## Cloud sync and sign-in
+
+- Database: Supabase project `haverton-operations` (London, eu-west-2, free plan), schema in `supabase/schema.sql`.
+- Sign-in: email and password. Public sign-up is disabled, and only emails in `ops.allowed_users` can read or write (row level security). Roles: owner, editor, viewer.
+- The site content is encrypted with a random 256-bit key held in `ops.site_secret`; the database releases it only to allowlisted, signed-in users. The key is never stored in git. Build with `HAV_CONTENT_KEY=<key> node scripts/build-encrypted.js`.
+- Every insert, update and delete is written to `ops.audit_log` by database triggers with the user's email. The audit log cannot be edited through the API.
+- Each device keeps a working copy for speed and offline use; it is cleared on sign-out.
+- Free plan limits: no automatic backups (export weekly from the Data page) and the project pauses after 7 days without use (restore it from the Supabase dashboard).
+- To add a user: add their email to `ops.allowed_users` and create their account in Supabase Authentication.
+
+## How data was stored before cloud sync
 
 - Register entries are saved **only in the browser on the device being used** (localStorage). Nothing is sent to a server. The site makes no network calls (`connect-src 'none'`).
 - Data does not sync between devices or people. Clearing browser data deletes it. Use **Data, Backup And Privacy → Export full backup** at least weekly and keep the file in Haverton's access controlled storage.

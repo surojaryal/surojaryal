@@ -254,6 +254,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
 .nav-account { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: 0 .6rem .8rem; font-size: .78rem; color: #c8d0dc; }
 .nav-account span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nav-account .link { color: var(--gold-2); font-size: .78rem; white-space: nowrap; }
+.nav-acts { display: flex; gap: .7rem; flex: none; }
 
 /* ---------- CRM: records, timeline, pipeline, search, reports ---------- */
 a.rid { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .82rem; color: var(--gold-ink); text-decoration: none; background: rgba(201, 165, 92, .12); padding: .1em .4em; border-radius: 4px; }
