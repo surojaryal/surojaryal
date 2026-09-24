@@ -12,6 +12,7 @@
     /*FONTS*/
     :root { --bg:#f8f6f1; --ink:#16242e; --ink2:#4a5a66; --line:#e3ddd1; --navy:#1b2b45; --navy-deep:#0f1a2c; --gold:#c9a55c; --gold-2:#e6cf98; --r:#b3261e; }
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
     body { margin:0; min-height:100vh; display:grid; place-items:center; padding:16px; color:var(--ink); font:16px/1.55 "Manrope",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
       background: radial-gradient(1200px 500px at 50% -10%, rgba(201,165,92,.18), transparent 60%), var(--bg); }
     .card { width:100%; max-width:420px; background:#fff; border:1px solid rgba(201,165,92,.35); border-radius:16px; overflow:hidden; box-shadow:0 24px 60px rgba(15,26,44,.14), 0 2px 6px rgba(15,26,44,.06); }
@@ -29,24 +30,58 @@
     button:hover { background:linear-gradient(180deg,#2b4570,#1f3150); }
     button:disabled { opacity:.65; cursor:wait; }
     .err { color:var(--r); font-weight:600; font-size:.9rem; min-height:1.3em; margin-top:12px; }
+    label.gap { margin-top:14px; }
+    .alt { margin:14px 0 0; text-align:center; }
+    .linkbtn { background:none; border:0; box-shadow:none; width:auto; margin:0; padding:0; color:var(--navy); font:inherit; font-size:.85rem; font-weight:600; letter-spacing:0; text-decoration:underline; cursor:pointer; }
+    .linkbtn:hover { background:none; color:#7a5c22; }
+    .hint { display:block; margin-top:6px; color:var(--ink2); font-size:.75rem; }
+    .ok { color:#1d7a46; font-weight:600; font-size:.9rem; }
+    .busy { display:flex; align-items:center; gap:10px; color:var(--navy); font-weight:600; padding:6px 0; }
+    .spin { width:18px; height:18px; border-radius:50%; border:2px solid rgba(201,165,92,.35); border-top-color:var(--gold); animation:sp .8s linear infinite; }
+    @keyframes sp { to { transform:rotate(360deg); } }
     .foot { margin-top:14px; padding-top:14px; border-top:1px solid var(--line); font-size:.74rem; color:var(--ink2); }
   </style>
 </head>
 <body>
-  <form class="card" id="f" autocomplete="off">
+  <main class="card" id="card">
     <div class="head">
       <div class="mark" aria-hidden="true">H</div>
       <div><span class="eyebrow">Haverton Care Limited</span><h1>Haverton Operations</h1></div>
     </div>
     <div class="body">
-      <p>Internal operating system. Enter the passphrase to continue.</p>
-      <label for="p">Passphrase</label>
-      <input id="p" type="password" autocomplete="current-password" required autofocus>
-      <button id="b" type="submit">Unlock</button>
+      <form id="f-signin" autocomplete="on" hidden>
+        <p>Internal operating system. Sign in with your Haverton account.</p>
+        <label for="em">Email</label>
+        <input id="em" type="email" autocomplete="username" required>
+        <label for="pw" class="gap">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" required>
+        <button id="b-signin" type="submit">Sign in</button>
+        <p class="alt"><button type="button" class="linkbtn" id="to-reset">Forgotten your password?</button></p>
+      </form>
+      <form id="f-reset" hidden>
+        <p>Enter your email. If it belongs to a Haverton account you will receive a link to set a new password.</p>
+        <label for="em2">Email</label>
+        <input id="em2" type="email" autocomplete="username" required>
+        <button id="b-reset" type="submit">Send reset link</button>
+        <p class="alt"><button type="button" class="linkbtn" id="to-signin">Back to sign in</button></p>
+      </form>
+      <form id="f-setpw" hidden>
+        <p id="setpw-intro">Choose a password for your Haverton account.</p>
+        <label for="np1">New password</label>
+        <input id="np1" type="password" autocomplete="new-password" minlength="12" required>
+        <label for="np2" class="gap">Confirm password</label>
+        <input id="np2" type="password" autocomplete="new-password" minlength="12" required>
+        <small class="hint">At least 12 characters. A few unrelated words with a number works well.</small>
+        <button id="b-setpw" type="submit">Save password and continue</button>
+      </form>
+      <div id="busy" class="busy" hidden><span class="spin" aria-hidden="true"></span><span id="busy-t">Opening…</span></div>
       <div class="err" id="e" role="alert"></div>
-      <div class="foot">Content is stored encrypted and unlocked only in your browser. Close the tab to lock it again.</div>
+      <div class="ok" id="m" role="status"></div>
+      <div class="foot">Access is limited to invited Haverton accounts. Site content is encrypted and only unlocked after you sign in.</div>
     </div>
-  </form>
+  </main>
+  <script src="cloud-config.js"></script>
+  <script src="cloud.js"></script>
   <script src="unlock.js"></script>
 </body>
 </html>

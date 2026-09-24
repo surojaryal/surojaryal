@@ -20,6 +20,7 @@
   --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font); }
 a { color: var(--brand); }
@@ -240,6 +241,20 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
 .foot { background: linear-gradient(120deg, var(--navy-deep), var(--navy)); color: #b9c2d0; border-top: 2px solid var(--gold); }
 .foot strong { color: var(--gold-2); }
 
+/* ---------- Cloud sync and account ---------- */
+.sync { margin-left: auto; font-size: .72rem; font-weight: 600; letter-spacing: .03em; padding: .28rem .6rem; border-radius: 999px; white-space: nowrap; border: 1px solid rgba(230, 207, 152, .35); color: #e8edf5; background: rgba(255, 255, 255, .06); }
+.sync::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: .4rem; background: #aab4c4; vertical-align: 1px; }
+.sync.ok::before { background: #6fd49a; }
+.sync.busy::before { background: var(--gold-2); animation: pulse 1s infinite alternate; }
+.sync.warn { color: #ffd9a8; border-color: rgba(255, 200, 120, .5); }
+.sync.warn::before { background: #ffb35c; }
+.sync + .pill { margin-left: .5rem; }
+.sync[hidden] + .pill { margin-left: auto; }
+@keyframes pulse { from { opacity: .35; } to { opacity: 1; } }
+.nav-account { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: 0 .6rem .8rem; font-size: .78rem; color: #c8d0dc; }
+.nav-account span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-account .link { color: var(--gold-2); font-size: .78rem; white-space: nowrap; }
+
 /* ---------- CRM: records, timeline, pipeline, search, reports ---------- */
 a.rid { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .82rem; color: var(--gold-ink); text-decoration: none; background: rgba(201, 165, 92, .12); padding: .1em .4em; border-radius: 4px; }
 a.rid:hover { background: rgba(201, 165, 92, .25); }
@@ -307,6 +322,8 @@ a.rname:hover { text-decoration: underline; }
   .pl-long { display: none; }
   .pl-short { display: inline; }
   .pill { font-size: .7rem; padding: .25rem .5rem; }
+  .sync { font-size: 0; padding: .3rem .35rem; }
+  .sync::before { margin-right: 0; }
   .main { padding: 1.1rem 1rem 2.5rem; }
   h1 { font-size: 1.65rem; }
 }

@@ -1,9 +1,14 @@
-/* Haverton Operations: single-page app. No build step, no external calls.
-   Register data is held in this browser only (localStorage) and can be exported. */
+/* Haverton Operations: single-page app. No build step.
+   Local mode: register data is held in this browser only (localStorage).
+   Cloud mode (signed in): data syncs to Supabase; the browser keeps a cache for speed and offline use. */
 (function () {
   "use strict";
 
-  const STORE_KEY = "haverton-ops-v1";
+  const LEGACY_KEY = "haverton-ops-v1";
+  const CLOUD = !!(window.HAVCloud && HAVCloud.enabled && HAVCloud.readSession());
+  const USER = CLOUD ? (HAVCloud.readSession().email || "") : "";
+  const STORE_KEY = CLOUD ? "haverton-ops-cloud:" + USER : LEGACY_KEY;
+  const SNAP_KEY = "haverton-ops-snap:" + USER;
   const $ = (s, el = document) => el.querySelector(s);
   const app = $("#app");
 
@@ -80,7 +85,168 @@
   function save() {
     state.updated = new Date().toISOString();
     try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); storageOk = true; }
-    catch (e) { storageOk = false; toast("Could not save in this browser. Export your data now."); }
+    catch (e) { storageOk = false; toast(CLOUD ? "Could not cache on this device; cloud sync continues." : "Could not save in this browser. Export your data now."); }
+    if (CLOUD) Sync.schedule();
+  }
+
+  /* ---------------- cloud sync ----------------
+     snap holds the JSON last agreed with the server for each item, so we can tell
+     local edits (dirty) from remote edits. Last write wins for simultaneous edits. */
+  const Sync = {
+    snap: new Map(), lastPull: null, timer: null, running: null, status: "idle", error: "", ready: false,
+    loadSnap() { try { const s = JSON.parse(localStorage.getItem(SNAP_KEY) || "null"); if (s) { this.snap = new Map(s.snap); this.lastPull = s.lastPull; } } catch (_) { } },
+    saveSnap() { try { localStorage.setItem(SNAP_KEY, JSON.stringify({ snap: [...this.snap], lastPull: this.lastPull })); } catch (_) { } },
+    setStatus(st, err) { this.status = st; this.error = err || ""; renderSync(); },
+    schedule(ms) { clearTimeout(this.timer); this.timer = setTimeout(() => this.push(), ms == null ? 700 : ms); this.setStatus("pending"); },
+    local() {
+      const m = new Map();
+      HAV.registers.forEach(reg => state.records[reg.key].forEach(r => {
+        const data = Object.assign({}, r); delete data.id;
+        m.set(`r|${reg.key}|${r.id}`, { table: "records", row: { register: reg.key, id: r.id, data } });
+      }));
+      state.activity.forEach(a => m.set(`a|${a.id}`, { table: "activity", row: { id: a.id, register: a.key, rec_id: a.recId, data: { type: a.type, date: a.date, text: a.text, by: a.by || "" } } }));
+      m.set("s|golive", { table: "settings", row: { key: "golive", data: state.golive } });
+      m.set("s|scoreboard", { table: "settings", row: { key: "scoreboard", data: state.scoreboard } });
+      m.forEach(v => { v.json = JSON.stringify(v.row.data) + (v.table === "activity" ? "|" + v.row.register + "|" + v.row.rec_id : ""); });
+      return m;
+    },
+    async push() {
+      if (!this.ready) return;
+      if (this.running) { await this.running.catch(() => { }); }
+      this.running = (async () => {
+        this.setStatus("saving");
+        const cur = this.local();
+        const up = { records: [], activity: [], settings: [] }, upKeys = [];
+        cur.forEach((v, k) => { if (this.snap.get(k) !== v.json) { up[v.table].push(v.row); upKeys.push([k, v.json]); } });
+        const gone = [...this.snap.keys()].filter(k => !cur.has(k) && !k.startsWith("s|"));
+        const conflict = { records: "register,id", activity: "id", settings: "key" };
+        for (const t of Object.keys(up)) {
+          for (let i = 0; i < up[t].length; i += 200) {
+            await HAVCloud.api("POST", `${t}?on_conflict=${conflict[t]}`, up[t].slice(i, i + 200), { Prefer: "resolution=merge-duplicates,return=minimal" });
+          }
+        }
+        for (const k of gone) {
+          const [kind, a, b] = k.split("|");
+          if (kind === "r") {
+            await HAVCloud.api("DELETE", `records?register=eq.${encodeURIComponent(a)}&id=eq.${encodeURIComponent(b)}`, undefined, { Prefer: "return=minimal" });
+            await HAVCloud.api("POST", "deletions?on_conflict=kind,register,id", [{ kind: "record", register: a, id: b }], { Prefer: "resolution=merge-duplicates,return=minimal" });
+          } else if (kind === "a") {
+            await HAVCloud.api("DELETE", `activity?id=eq.${encodeURIComponent(a)}`, undefined, { Prefer: "return=minimal" });
+            await HAVCloud.api("POST", "deletions?on_conflict=kind,register,id", [{ kind: "activity", register: "", id: a }], { Prefer: "resolution=merge-duplicates,return=minimal" });
+          }
+          this.snap.delete(k);
+        }
+        upKeys.forEach(([k, j]) => this.snap.set(k, j));
+        this.saveSnap();
+      })();
+      try { await this.running; this.setStatus("synced"); }
+      catch (e) { this.setStatus(e.status === 401 ? "signedout" : "offline", e.message); clearTimeout(this.timer); this.timer = setTimeout(() => this.push(), 30000); }
+      finally { this.running = null; }
+    },
+    async pull() {
+      const since = this.lastPull ? `updated_at=gt.${encodeURIComponent(this.lastPull)}&` : "";
+      const [recs, acts, sets, dels] = await Promise.all([
+        HAVCloud.all("records", since + "select=register,id,data,updated_at&order=updated_at"),
+        HAVCloud.all("activity", since + "select=id,register,rec_id,data,updated_at&order=updated_at"),
+        HAVCloud.all("settings", since + "select=key,data,updated_at"),
+        this.lastPull ? HAVCloud.all("deletions", `deleted_at=gt.${encodeURIComponent(this.lastPull)}&select=kind,register,id,deleted_at`) : Promise.resolve([])
+      ]);
+      const full = !this.lastPull;
+      const cur = this.local();
+      const dirty = k => cur.has(k) && this.snap.get(k) !== cur.get(k).json;
+      let latest = this.lastPull, changed = 0;
+      const seen = new Set();
+      const note = t => { if (t && (!latest || new Date(t) > new Date(latest))) latest = t; };
+      recs.forEach(row => {
+        note(row.updated_at);
+        const reg = regByKey(row.register); if (!reg) return;
+        const k = `r|${row.register}|${row.id}`; seen.add(k);
+        const json = JSON.stringify(row.data);
+        if (!dirty(k)) {
+          const list = state.records[row.register], i = list.findIndex(r => r.id === row.id), rec = Object.assign({ id: row.id }, row.data);
+          if (i >= 0) { if (JSON.stringify(Object.assign({}, list[i], { id: undefined })) !== JSON.stringify(Object.assign({}, rec, { id: undefined }))) { list[i] = rec; changed++; } } else { list.push(rec); changed++; }
+        }
+        this.snap.set(k, json);
+      });
+      acts.forEach(row => {
+        note(row.updated_at);
+        const k = `a|${row.id}`; seen.add(k);
+        const json = JSON.stringify(row.data) + "|" + row.register + "|" + row.rec_id;
+        if (!dirty(k)) {
+          const a = { id: row.id, key: row.register, recId: row.rec_id, type: row.data.type, date: row.data.date, text: row.data.text, by: row.data.by };
+          const i = state.activity.findIndex(x => x.id === row.id);
+          if (i >= 0) state.activity[i] = a; else state.activity.push(a);
+          changed++;
+        }
+        this.snap.set(k, json);
+      });
+      sets.forEach(row => {
+        note(row.updated_at);
+        const k = `s|${row.key}`;
+        if (!dirty(k) && (row.key === "golive" || row.key === "scoreboard")) { state[row.key] = row.data || state[row.key]; changed++; }
+        this.snap.set(k, JSON.stringify(row.data));
+      });
+      dels.forEach(d => {
+        note(d.deleted_at);
+        const k = d.kind === "record" ? `r|${d.register}|${d.id}` : `a|${d.id}`;
+        if (dirty(k) && cur.has(k)) return;
+        if (d.kind === "record" && state.records[d.register]) state.records[d.register] = state.records[d.register].filter(r => r.id !== d.id);
+        if (d.kind === "activity") state.activity = state.activity.filter(a => a.id !== d.id);
+        this.snap.delete(k); changed++;
+      });
+      if (full) {
+        /* Anything we previously synced that the server no longer has was deleted elsewhere */
+        [...this.snap.keys()].filter(k => !k.startsWith("s|") && !seen.has(k)).forEach(k => {
+          const [kind, a, b] = k.split("|");
+          if (kind === "r" && state.records[a] && !dirty(k)) state.records[a] = state.records[a].filter(r => r.id !== b);
+          if (kind === "a" && !dirty(k)) state.activity = state.activity.filter(x => x.id !== a);
+          this.snap.delete(k); changed++;
+        });
+      }
+      /* Keep ID counters ahead of every ID in use, whichever device created it */
+      HAV.registers.forEach(reg => state.records[reg.key].forEach(r => { const n = parseInt(String(r.id).slice(reg.prefix.length), 10); if (n > (state.seq[reg.key] || 0)) state.seq[reg.key] = n; }));
+      this.lastPull = latest; this.saveSnap();
+      if (changed) { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (_) { } }
+      return changed;
+    },
+    async start() {
+      this.loadSnap();
+      this.setStatus("saving");
+      try {
+        const serverHasData = (await HAVCloud.api("GET", "records?select=id&limit=1")).length > 0;
+        this.lastPull = serverHasData ? this.lastPull : null;
+        if (!serverHasData) this.snap.clear();
+        await this.pull();
+        this.ready = true;
+        /* One-off move of data created before cloud sync, from this browser's local store */
+        let legacy = null; try { legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || "null"); } catch (_) { }
+        const legacyCount = legacy && legacy.records ? Object.values(legacy.records).reduce((a, l) => a + (l || []).length, 0) : 0;
+        if (!serverHasData && legacyCount && confirm(`This browser holds ${legacyCount} record(s) from before cloud sync. Upload them to the cloud now?`)) {
+          state = normalise(legacy); save();
+          try { localStorage.setItem(LEGACY_KEY + ":uploaded", new Date().toISOString()); localStorage.removeItem(LEGACY_KEY); } catch (_) { }
+        }
+        await this.push();
+        route();
+      } catch (e) {
+        this.ready = true;
+        this.setStatus(e.status === 401 ? "signedout" : "offline", e.message);
+      }
+      setInterval(() => { if (!document.hidden) this.refresh(); }, 60000);
+      window.addEventListener("focus", () => this.refresh());
+      window.addEventListener("online", () => this.schedule(0));
+    },
+    async refresh() {
+      if (!this.ready || this.running) return;
+      try { const n = await this.pull(); if (this.status !== "pending") this.setStatus("synced"); if (n && !$("dialog[open]")) route(); if (this.local && [...this.local()].some(([k, v]) => this.snap.get(k) !== v.json)) this.schedule(0); }
+      catch (e) { this.setStatus(e.status === 401 ? "signedout" : "offline", e.message); }
+    }
+  };
+  function renderSync() {
+    const el = $("#sync-pill"); if (!el) return;
+    if (!CLOUD) { el.hidden = true; return; }
+    const map = { idle: ["", "Connecting…"], pending: ["busy", "Saving…"], saving: ["busy", "Syncing…"], synced: ["ok", "Synced"], offline: ["warn", "Offline: saved on this device"], signedout: ["warn", "Signed out: sign in again"] };
+    const [cls, label] = map[Sync.status] || map.idle;
+    el.hidden = false; el.className = "sync " + cls; el.textContent = label; el.title = Sync.error || label;
   }
 
   /* ---------------- derived state ---------------- */
@@ -109,13 +275,22 @@
   function renderNav() {
     const cur = location.hash || "#/";
     const viewKey = (cur.match(/^#\/view\/([^/]+)/) || [])[1];
-    $("#nav").innerHTML = `<form class="nav-search" id="navsearch" role="search"><input type="search" id="navq" placeholder="Search everything" aria-label="Search everything"></form>` + NAV.map(([g, items]) =>
+    $("#nav").innerHTML = (CLOUD ? `<div class="nav-account"><span title="Signed in">${esc(USER)}</span><button type="button" class="link" id="signout">Sign out</button></div>` : "") + `<form class="nav-search" id="navsearch" role="search"><input type="search" id="navq" placeholder="Search everything" aria-label="Search everything"></form>` + NAV.map(([g, items]) =>
       `<div class="nav-group"><div class="nav-label">${g}</div>` +
       items.map(([href, label, temp]) => {
         const active = cur === href || (href !== "#/" && cur.startsWith(href + "/")) || (viewKey && href === "#/r/" + viewKey);
         const lock = temp && !tempLive() ? `<span class="lock" title="Temporary staffing is off">off</span>` : "";
         return `<a href="${href}" class="${active ? "active" : ""}">${esc(label)}${lock}</a>`;
       }).join("") + `</div>`).join("");
+    const so = $("#signout");
+    if (so) so.addEventListener("click", async () => {
+      if (Sync.status === "pending" || Sync.status === "saving" || Sync.status === "offline") {
+        if (!confirm("Some changes have not reached the cloud yet. Sign out anyway? Unsynced changes on this device will be lost.")) return;
+      }
+      try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(SNAP_KEY); sessionStorage.clear(); } catch (_) { }
+      await HAVCloud.signOut(); location.replace(location.pathname);
+    });
+    renderSync();
     $("#navsearch").addEventListener("submit", e => { e.preventDefault(); const q = $("#navq").value.trim(); if (q) location.hash = "#/search/" + encodeURIComponent(q); });
     $("#temp-pill").className = "pill " + (tempLive() ? "go" : "off");
     $("#temp-pill").innerHTML = `<span class="pl-long">Temporary staffing</span><span class="pl-short">Temp</span>: ${tempLive() ? "GO" : "OFF"}`;
@@ -397,7 +572,7 @@
         ${open.length ? table(["Vacancy", "Client", "Location", "Salary / Rate", ""], open.map(v => [`<a href="#/view/vacancies/${encodeURIComponent(v.id)}">${esc(v["Job Title"])}</a>`, refLink("clients", v["Client ID"]), esc(v["Location"] || ""), v["Salary / Charge Rate"] ? gbp.format(num(v["Salary / Charge Rate"])) : "", `<button class="link" data-submit="${esc(v.id)}">Create submission</button>`]), "compact") : `<p class="muted">No open vacancies match this candidate’s target role.</p>`}</section>`;
     }
     const acts = activityFor(key, id).map(a => ({ ts: a.date + "T12:00", html: `<span class="badge n">${esc(a.type)}</span> ${esc(a.text)}${a.by ? ` <span class="muted small">by ${esc(a.by)}</span>` : ""}`, date: a.date, del: a.id }))
-      .concat(state.audit.filter(a => a.key === key && a.id === id).map(a => ({ ts: a.ts, html: `<span class="muted">Record ${esc(a.action)}${a.fields.length ? ": " + esc(a.fields.slice(0, 6).join(", ")) + (a.fields.length > 6 ? "…" : "") : ""}</span>`, date: a.ts.slice(0, 10) })))
+      .concat((CLOUD ? [] : state.audit).filter(a => a.key === key && a.id === id).map(a => ({ ts: a.ts, html: `<span class="muted">Record ${esc(a.action)}${a.fields.length ? ": " + esc(a.fields.slice(0, 6).join(", ")) + (a.fields.length > 6 ? "…" : "") : ""}</span>`, date: a.ts.slice(0, 10) })))
       .sort((a, b) => b.ts.localeCompare(a.ts));
     return `<p class="crumb"><a href="#/r/${key}">${esc(reg.title)}</a> / ${esc(id)}</p>` +
       `<header class="page-head"><h1>${esc(recLabel(key, rec) || id)} ${badge(statusV)}</h1><p>${esc(reg.title.replace(/s$/, ""))} record <code>${esc(id)}</code>${rec.created ? " · created " + fmtDate(rec.created.slice(0, 10)) : ""}${rec.modified ? " · updated " + fmtDate(rec.modified.slice(0, 10)) : ""}</p></header>
@@ -406,8 +581,20 @@
       <div class="grid2 view"><section class="card"><h2>Details</h2><dl class="kvs">${details}</dl></section>
       <div><section class="card"><h2>Linked Records</h2>${relHtml}</section>${matches}</div></div>
       <section class="card"><h2>Activity And History <span class="count">${acts.length}</span></h2>
-        ${acts.length ? `<ul class="timeline">${acts.map(a => `<li><time>${fmtDate(a.date)}</time><div>${a.html}${a.del ? ` <button class="link small" data-delact="${a.del}">remove</button>` : ""}</div></li>`).join("")}</ul>` : `<p class="muted">No activity yet. Use <strong>Log activity</strong> to record calls, emails, meetings and notes.</p>`}
+        ${acts.length || CLOUD ? `<ul class="timeline" id="timeline">${acts.map(a => `<li data-ts="${esc(a.ts)}"><time>${fmtDate(a.date)}</time><div>${a.html}${a.del ? ` <button class="link small" data-delact="${a.del}">remove</button>` : ""}</div></li>`).join("")}</ul>` : `<p class="muted">No activity yet. Use <strong>Log activity</strong> to record calls, emails, meetings and notes.</p>`}
       </section>`;
+  }
+
+  async function loadServerHistory(key, id) {
+    try {
+      const rows = await HAVCloud.api("GET", `audit_log?kind=eq.records&register=eq.${encodeURIComponent(key)}&id=eq.${encodeURIComponent(id)}&select=at,actor,action,fields&order=seq.desc&limit=100`);
+      const tl = $("#timeline"); if (!tl || !location.hash.includes("/" + encodeURIComponent(id))) return;
+      const items = rows.map(a => `<li data-ts="${esc(a.at)}"><time>${fmtDate(a.at.slice(0, 10))}</time><div><span class="muted">${esc(a.action === "insert" ? "Created" : a.action === "delete" ? "Deleted" : "Updated")} by ${esc(a.actor)}${a.fields && a.fields.length ? ": " + esc(a.fields.slice(0, 6).join(", ")) + (a.fields.length > 6 ? "…" : "") : ""} · ${new Date(a.at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span></div></li>`);
+      tl.insertAdjacentHTML("beforeend", items.join(""));
+      [...tl.children].sort((x, y) => new Date(y.dataset.ts) - new Date(x.dataset.ts)).forEach(li => tl.appendChild(li));
+      const c = tl.closest(".card").querySelector(".count"); if (c) c.textContent = tl.children.length;
+      if (!tl.children.length) tl.insertAdjacentHTML("afterend", `<p class="muted">No activity yet. Use <strong>Log activity</strong> to record calls, emails, meetings and notes.</p>`);
+    } catch (_) { /* history is optional; the page works without it */ }
   }
 
   function openActivity(key, id) {
@@ -428,7 +615,7 @@
       e.preventDefault(); if (!form.reportValidity()) return;
       const d = Object.fromEntries([...new FormData(form)].map(([k, v]) => [k, String(v).trim()]));
       if (d.next && !d.due) { $("#ferr").textContent = "Add a due date for the next action."; return; }
-      state.actSeq++; state.activity.push({ id: "AC" + state.actSeq, key, recId: id, type: d.type, date: d.date, text: d.text, by: d.by });
+      state.actSeq++; state.activity.push({ id: "AC" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), key, recId: id, type: d.type, date: d.date, text: d.text, by: d.by });
       if (d.by) state.lastBy = d.by;
       if (d.next) {
         const rec = findRec(key, id), nid = newId("followups");
@@ -826,13 +1013,14 @@
   function pageData() {
     const counts = HAV.registers.map(r => [esc(r.title), state.records[r.key].length]);
     return header("Data, Backup And Privacy", "How this operations site stores information and what must never be entered.") +
-      callout("Where your data lives", "Register entries are saved only in this browser on this device. They are not sent to any server, not shared between devices or users, and are lost if browser data is cleared. Export a backup at least weekly and store it in Haverton’s access-controlled storage.", "warn") +
+      (CLOUD ? callout("Where your data lives", "Signed in as " + USER + ". Records sync to Haverton’s private cloud database (Supabase, London region) and are available on any device you sign in on. This device keeps a working copy for speed and offline use, which is cleared when you sign out. Every change is recorded in a server-side audit trail. The free database tier has no automatic backups, so export a backup at least weekly.", "info")
+        : callout("Where your data lives", "Register entries are saved only in this browser on this device. They are not sent to any server, not shared between devices or users, and are lost if browser data is cleared. Export a backup at least weekly and store it in Haverton’s access-controlled storage.", "warn")) +
       `<div class="grid2"><section class="card"><h2>Backup And Restore</h2>
         <p>Last saved: ${state.updated ? new Date(state.updated).toLocaleString("en-GB") : "never"}${storageOk ? "" : " <strong>(saving failed)</strong>"}</p>
         <div class="btn-row"><button class="btn" id="exp">Export full backup (JSON)</button><label class="btn ghost file">Import backup<input type="file" id="imp" accept="application/json,.json" hidden></label></div>
-        <p class="muted small">Import replaces everything currently stored in this browser.</p>
+        <p class="muted small">${CLOUD ? "Import replaces everything in the cloud database for every user. Use it only to restore from a backup." : "Import replaces everything currently stored in this browser."}</p>
         <h3>Records held</h3>${table(["Register", "Records"], counts, "compact")}
-        <button class="btn danger ghost" id="wipe">Erase all data in this browser</button>
+        <button class="btn danger ghost" id="wipe">${CLOUD ? "Clear this device’s copy" : "Erase all data in this browser"}</button>
         <h3>Site source code</h3>
         <p>The full source code of this site is stored alongside it, encrypted with the same passphrase. Download it to make changes or to rebuild the site elsewhere.</p>
         <button class="btn ghost" id="src">Download source code (zip)</button></section>
@@ -894,6 +1082,7 @@
     }
     if (parts[0] === "view") {
       const key = parts[1], id = decodeURIComponent(parts.slice(2).join("/")), rec = findRec(key, id);
+      if (rec && CLOUD) loadServerHistory(key, id);
       if (rec) {
         $("#v-edit").addEventListener("click", () => openForm(key, id));
         $("#v-note").addEventListener("click", () => openActivity(key, id));
@@ -956,7 +1145,7 @@
           try {
             const s = JSON.parse(rd.result);
             if (!s || typeof s !== "object" || !s.records) throw new Error("Not a Haverton backup");
-            if (!confirm("Replace all data in this browser with the imported backup?")) return;
+            if (!confirm(CLOUD ? "Replace ALL cloud data, for every user, with this backup? Records not in the backup will be deleted from the cloud." : "Replace all data in this browser with the imported backup?")) return;
             state = normalise(s);
             save(); route(); toast("Backup imported");
           } catch (err) { toast("Import failed: " + err.message); }
@@ -964,6 +1153,11 @@
         rd.readAsText(f);
       });
       $("#wipe").addEventListener("click", () => {
+        if (CLOUD) {
+          if (!confirm("Clear this device’s copy and reload it from the cloud? Cloud data is not affected.")) return;
+          try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(SNAP_KEY); } catch (_) { }
+          location.reload(); return;
+        }
         if (!confirm("Erase every record in this browser? Export a backup first. This cannot be undone.")) return;
         state = blank(); save(); route(); toast("All local data erased");
       });
@@ -983,4 +1177,5 @@
   $("#menu").addEventListener("click", () => document.body.classList.toggle("nav-open"));
   window.addEventListener("hashchange", route);
   route();
+  if (CLOUD) Sync.start(); else renderSync();
 })();
