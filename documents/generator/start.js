@@ -12,7 +12,8 @@ build(`${root}/1 Start Here/Read Me First.docx`, [
     ["3 Legal", "Client Terms Of Business, Candidate Terms, Recruitment Privacy Notice, Data Protection Record, Insurance Broker Brief", "The documents the law requires before you place anyone. **Have a solicitor review the first three.**"],
     ["4 Forms", "Candidate File Checklist, Candidate Registration Form, Consent To Represent, Client Vacancy Brief, Interview Scoring Sheet, Reference Request, Placement Check In Record", "Everyday recruitment work"],
     ["5 Sales", "Client Emails And Call Script, Fee Proposal Letter", "Winning clients"],
-    ["6 Temporary Staffing Drafts", "Temporary Worker Terms, Client Terms For Temporary Supply, Assignment Confirmation, Go Live Checklist", "Getting ready for temporary staffing. **Not for use** until the Go Live Gate is signed."]
+    ["6 Temporary Staffing Drafts", "Temporary Worker Terms, Client Terms For Temporary Supply, Assignment Confirmation, Go Live Checklist", "Getting ready for temporary staffing. **Not for use** until the Go Live Gate is signed."],
+    ["7 Launch Kit", "Target Providers (spreadsheet), Target Providers Import, Candidates Import Template, Job Adverts, Recruitment Page, Temporary Staffing Cash Flow (spreadsheet)", "Starting now: who to contact, adverts to post, website wording, and the cash you need for temporary staffing"]
   ], [2, 4, 4]),
   H1("Track your progress in three ways"),
   ...bullets([
@@ -35,7 +36,7 @@ build(`${root}/1 Start Here/Read Me First.docx`, [
     "Check the **ICO data protection fee** is paid for Haverton Care Limited and note the registration number in the privacy notice.",
     "In Supabase, accept the **data processing agreement** (organisation settings, legal documents).",
     "Put the privacy notice and a candidate registration route on the website Recruitment page.",
-    "Import your target providers and candidates into **Haverton Operations** (Import CSV on each register).",
+    "Import **7 Launch Kit/Target Providers Import.csv** into Haverton Operations (Clients, Import CSV): 442 CQC-registered services in your priority area, ready to contact.",
     "Start the weekly routine: 20 target providers, 10 to 15 emails, 15 to 20 calls, 3 discovery meetings. Use the Sales templates.",
     "For every vacancy: signed terms, completed Vacancy Brief, then search. For every candidate: registration, then consent before any CV is sent."
   ]),
