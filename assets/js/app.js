@@ -58,15 +58,23 @@
 
   /* ---------------- storage ---------------- */
   let state = load();
-  function blank() { const s = { records: {}, seq: {}, golive: { items: {}, director: {} }, scoreboard: {}, updated: null }; HAV.registers.forEach(r => { s.records[r.key] = []; s.seq[r.key] = 0; }); return s; }
+  function blank() { const s = { records: {}, seq: {}, golive: { items: {}, director: {} }, scoreboard: {}, activity: [], audit: [], actSeq: 0, updated: null }; HAV.registers.forEach(r => { s.records[r.key] = []; s.seq[r.key] = 0; }); return s; }
+  function normalise(s) {
+    s = Object.assign(blank(), s);
+    HAV.registers.forEach(r => { s.records[r.key] = s.records[r.key] || []; s.seq[r.key] = s.seq[r.key] || 0; });
+    s.activity = Array.isArray(s.activity) ? s.activity : []; s.audit = Array.isArray(s.audit) ? s.audit : []; s.actSeq = s.actSeq || 0;
+    return s;
+  }
   function load() {
     try {
       const raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return blank();
-      const s = Object.assign(blank(), JSON.parse(raw));
-      HAV.registers.forEach(r => { s.records[r.key] = s.records[r.key] || []; s.seq[r.key] = s.seq[r.key] || 0; });
-      return s;
+      return raw ? normalise(JSON.parse(raw)) : blank();
     } catch (e) { return blank(); }
+  }
+  /* Local change log: who/when is this browser's user; kept to the last 3,000 entries */
+  function logChange(key, id, action, fields) {
+    state.audit.push({ ts: new Date().toISOString(), key, id, action, fields: fields || [] });
+    if (state.audit.length > 3000) state.audit.splice(0, state.audit.length - 3000);
   }
   let storageOk = true;
   function save() {
@@ -92,7 +100,7 @@
 
   /* ---------------- UI chrome ---------------- */
   const NAV = [
-    ["Overview", [["#/", "Dashboard"], ["#/golive", "Temp Go Live Gate"], ["#/controls", "Controls And Authority"]]],
+    ["Overview", [["#/", "Dashboard"], ["#/pipeline", "Pipeline Board"], ["#/reports", "Reports"], ["#/golive", "Temp Go Live Gate"], ["#/controls", "Controls And Authority"]]],
     ["Registers", HAV.registers.map(r => ["#/r/" + r.key, r.title, r.temp])],
     ["Operating System", [["#/procedures", "Procedures (SOPs)"], ["#/strategy", "Strategy And Services"], ["#/sales", "Sales And Candidates"], ["#/kpis", "KPIs And Governance"], ["#/risks", "Risk Register"], ["#/plan", "90 Day And 12 Month Plan"]]],
     ["Finance", [["#/finance", "Financial Model"], ["#/calculators", "Pricing Calculators"]]],
@@ -100,13 +108,15 @@
   ];
   function renderNav() {
     const cur = location.hash || "#/";
-    $("#nav").innerHTML = NAV.map(([g, items]) =>
+    const viewKey = (cur.match(/^#\/view\/([^/]+)/) || [])[1];
+    $("#nav").innerHTML = `<form class="nav-search" id="navsearch" role="search"><input type="search" id="navq" placeholder="Search everything" aria-label="Search everything"></form>` + NAV.map(([g, items]) =>
       `<div class="nav-group"><div class="nav-label">${g}</div>` +
       items.map(([href, label, temp]) => {
-        const active = cur === href || (href !== "#/" && cur.startsWith(href + "/"));
+        const active = cur === href || (href !== "#/" && cur.startsWith(href + "/")) || (viewKey && href === "#/r/" + viewKey);
         const lock = temp && !tempLive() ? `<span class="lock" title="Temporary staffing is off">off</span>` : "";
         return `<a href="${href}" class="${active ? "active" : ""}">${esc(label)}${lock}</a>`;
       }).join("") + `</div>`).join("");
+    $("#navsearch").addEventListener("submit", e => { e.preventDefault(); const q = $("#navq").value.trim(); if (q) location.hash = "#/search/" + encodeURIComponent(q); });
     $("#temp-pill").className = "pill " + (tempLive() ? "go" : "off");
     $("#temp-pill").innerHTML = `<span class="pl-long">Temporary staffing</span><span class="pl-short">Temp</span>: ${tempLive() ? "GO" : "OFF"}`;
   }
@@ -149,20 +159,24 @@
     ];
 
     const alerts = [];
-    R.followups.filter(r => r["Status"] !== "Closed" && r["Due Date"] && r["Due Date"] < t).forEach(r => alerts.push(["r", `Follow up overdue: ${r["Action"]} (${r["Organisation / Candidate"]})`, "#/r/followups", r["Due Date"]]));
-    R.candidates.filter(r => r["RTW Expiry / Follow Up"] && r["RTW Expiry / Follow Up"] <= in30 && !["Inactive", "Do Not Contact"].includes(r["Current Stage"])).forEach(r => alerts.push([r["RTW Expiry / Follow Up"] < t ? "r" : "a", `Right to work follow up: ${r["Full Name"]} (${r.id})`, "#/r/candidates", r["RTW Expiry / Follow Up"]]));
+    R.followups.filter(r => r["Status"] !== "Closed" && r["Due Date"] && r["Due Date"] < t).forEach(r => alerts.push(["r", `Follow up overdue: ${r["Action"]} (${r["Organisation / Candidate"]})`, `#/view/followups/${encodeURIComponent(r.id)}`, r["Due Date"]]));
+    R.candidates.filter(r => r["RTW Expiry / Follow Up"] && r["RTW Expiry / Follow Up"] <= in30 && !["Inactive", "Do Not Contact"].includes(r["Current Stage"])).forEach(r => alerts.push([r["RTW Expiry / Follow Up"] < t ? "r" : "a", `Right to work follow up: ${r["Full Name"]} (${r.id})`, `#/view/candidates/${encodeURIComponent(r.id)}`, r["RTW Expiry / Follow Up"]]));
     R.compliance.filter(r => r["Registration Expiry"] && r["Registration Expiry"] <= in30).forEach(r => alerts.push(["a", `Professional registration expiry: ${r["Candidate ID"]}`, "#/r/compliance", r["Registration Expiry"]]));
-    R.submissions.filter(r => r["Stage"] !== "Draft" && r["Consent Confirmed"] !== "Yes").forEach(r => alerts.push(["r", `Submission without recorded consent: ${r.id}`, "#/r/submissions", ""]));
+    R.submissions.filter(r => r["Stage"] !== "Draft" && r["Consent Confirmed"] !== "Yes").forEach(r => alerts.push(["r", `Submission without recorded consent: ${r.id}`, `#/view/submissions/${encodeURIComponent(r.id)}`, ""]));
     R.awr.filter(r => { const w = addDays(r["Qualifying Start"], 84); return w && w <= in14 && r["Equal Treatment Review"] !== "Completed"; }).forEach(r => alerts.push(["r", `AWR week 12 due: ${r["Worker ID"]} at ${r["Client ID"]}`, "#/r/awr", addDays(r["Qualifying Start"], 84)]));
     R.awr.filter(r => { const w = addDays(r["Qualifying Start"], 70); return w && w <= t && r["Comparator Information Requested"] !== "Yes"; }).forEach(r => alerts.push(["a", `AWR week 10: request comparator information for ${r["Worker ID"]}`, "#/r/awr", ""]));
     R.placements.filter(r => r["Start Date"] && r["Status"] !== "Cancelled").forEach(r => {
-      [[7, "week 1"], [28, "week 4"], [84, "week 12"]].forEach(([d, l]) => { const due = addDays(r["Start Date"], d); if (due >= addDays(t, -3) && due <= addDays(t, 7)) alerts.push(["a", `Placement ${l} check in: ${r["Job Title"]} (${r.id})`, "#/r/placements", due]); });
+      [[7, "week 1"], [28, "week 4"], [84, "week 12"]].forEach(([d, l]) => { const due = addDays(r["Start Date"], d); if (due >= addDays(t, -3) && due <= addDays(t, 7)) alerts.push(["a", `Placement ${l} check in: ${r["Job Title"]} (${r.id})`, `#/view/placements/${encodeURIComponent(r.id)}`, due]); });
     });
-    R.cases.filter(r => r["Status"] !== "Closed" && ["High", "Critical"].includes(r["Immediate Risk"])).forEach(r => alerts.push(["r", `${r["Immediate Risk"]} risk case open: ${r.id} (${r["Type"]})`, "#/r/cases", r["Target Date"]]));
+    R.cases.filter(r => r["Status"] !== "Closed" && ["High", "Critical"].includes(r["Immediate Risk"])).forEach(r => alerts.push(["r", `${r["Immediate Risk"]} risk case open: ${r.id} (${r["Type"]})`, `#/view/cases/${encodeURIComponent(r.id)}`, r["Target Date"]]));
     R.cases.filter(r => r["Status"] !== "Closed" && r["Target Date"] && r["Target Date"] < t).forEach(r => alerts.push(["r", `Case past target date: ${r.id}`, "#/r/cases", r["Target Date"]]));
     R.audits.filter(r => r["Critical Failure"] === "Yes" && r["Status"] !== "Closed").forEach(r => alerts.push(["r", `Unresolved critical audit failure: ${r["Audit Area"]} (${r.id})`, "#/r/audits", r["Due Date"]]));
-    overdue14.forEach(r => alerts.push(["r", `Invoice ${r.id} is ${daysOverdue(r)} days overdue (${r["Client ID"]})`, "#/r/invoices", r["Due Date"]]));
-    R.clients.filter(r => r["Last Review"] && r["Last Review"] < addDays(t, -365) && ["Active Client", "Expansion"].includes(r["Client Status"])).forEach(r => alerts.push(["a", `Annual client file review due: ${r["Legal Entity"]}`, "#/r/clients", ""]));
+    overdue14.forEach(r => alerts.push(["r", `Invoice ${r.id} is ${daysOverdue(r)} days overdue (${r["Client ID"]})`, `#/view/invoices/${encodeURIComponent(r.id)}`, r["Due Date"]]));
+    R.clients.filter(r => r["Last Review"] && r["Last Review"] < addDays(t, -365) && ["Active Client", "Expansion"].includes(r["Client Status"])).forEach(r => alerts.push(["a", `Annual client file review due: ${r["Legal Entity"]}`, `#/view/clients/${encodeURIComponent(r.id)}`, ""]));
+    /* Operating standard: every active sales or candidate record has an owner and a next action */
+    const openFu = new Set(R.followups.filter(f => f["Status"] !== "Closed").map(f => f["Related ID"]));
+    R.clients.filter(r => ["Lead", "Prospect", "Qualified", "Terms Sent", "Active Client", "Expansion"].includes(r["Client Status"]) && !openFu.has(r.id)).forEach(r => alerts.push(["a", `No next action: ${r["Legal Entity"] || r.id}`, `#/view/clients/${encodeURIComponent(r.id)}`, ""]));
+    R.candidates.filter(r => !["Placed", "Inactive", "Do Not Contact"].includes(r["Current Stage"]) && !r["Next Action Date"] && !openFu.has(r.id)).forEach(r => alerts.push(["a", `No next action: ${r["Full Name"] || r.id}`, `#/view/candidates/${encodeURIComponent(r.id)}`, ""]));
     alerts.sort((a, b) => (a[0] === b[0] ? 0 : a[0] === "r" ? -1 : 1));
 
     const wk = weekKey(), sb = state.scoreboard[wk] || {};
@@ -202,6 +216,8 @@
         <input type="search" id="q" placeholder="Search ${esc(reg.title.toLowerCase())}" aria-label="Search">
         <select id="sf" aria-label="Filter by status"><option value="">All statuses</option>${statuses.map(s => `<option>${esc(s)}</option>`).join("")}</select>
         <span class="spacer"></span>
+        ${key === "followups" ? `<button class="btn ghost" id="ics" title="Download open follow ups as calendar events">Add to calendar</button>` : ""}
+        <label class="btn ghost file ${locked ? "is-disabled" : ""}">Import CSV<input type="file" id="csvin" accept=".csv,text/csv" hidden ${locked ? "disabled" : ""}></label>
         <button class="btn ghost" id="csv">Export CSV</button>
         <button class="btn" id="add" ${locked ? "disabled" : ""}>Add record</button>
       </div>
@@ -217,21 +233,30 @@
     if (!state.records[key].length) { $("#reg-table").innerHTML = `<div class="empty">No records yet. Use <strong>Add record</strong> to start the ${esc(reg.title.toLowerCase())} register.</div>`; return; }
     const cols = ["ID"].concat(reg.list);
     $("#reg-table").innerHTML = table(cols.concat([""]), rows.map(r => {
-      return [`<code>${esc(r.id)}</code>`].concat(reg.list.map(c => {
+      return [`<a class="rid" href="#/view/${key}/${encodeURIComponent(r.id)}">${esc(r.id)}</a>`].concat(reg.list.map((c, i) => {
         const t = fieldType(reg, c), v = valueOf(reg, r, c);
         const f = reg.fields.find(f => f[0] === c);
         if (/Critical Failure|Safeguarding Concern/.test(c)) return v === "Yes" ? `<span class="badge r">Yes</span>` : v === "No" ? `<span class="badge g">No</span>` : "";
         if (t === "select" || (t === "derived" && /Status|Retained/.test(c))) return badge(v);
         if (t === "derived") return fmt(v, f[2].fmt);
-        if (t === "ref") return esc(v);
+        if (t === "ref") return refLink(f[2].ref, v);
+        if (i === 0) return `<a class="rname" href="#/view/${key}/${encodeURIComponent(r.id)}">${fmt(v, t)}</a>`;
         return fmt(v, t);
-      })).concat([`<button class="link" data-edit="${esc(r.id)}">Open</button>`]);
+      })).concat([`<a class="link" href="#/view/${key}/${encodeURIComponent(r.id)}">Open</a>`]);
     }), "reg");
   }
 
-  function openForm(key, id) {
+  function findDuplicate(key, data, id) {
+    const others = state.records[key].filter(r => r.id !== id), low = v => String(v || "").trim().toLowerCase();
+    if (key === "candidates") return others.find(r => (data["Email"] && low(r["Email"]) === low(data["Email"])) || (data["Phone"] && low(r["Phone"]).replace(/\s/g, "") === low(data["Phone"]).replace(/\s/g, "")) || (low(r["Full Name"]) === low(data["Full Name"]) && data["Postcode"] && low(r["Postcode"]) === low(data["Postcode"])));
+    if (key === "clients") return others.find(r => low(r["Legal Entity"]) === low(data["Legal Entity"]));
+    return null;
+  }
+  function newId(key) { const reg = regByKey(key); state.seq[key]++; return reg.prefix + String(state.seq[key]).padStart(4, "0"); }
+
+  function openForm(key, id, prefill) {
     const reg = regByKey(key);
-    const rec = id ? state.records[key].find(r => r.id === id) : {};
+    const rec = id ? state.records[key].find(r => r.id === id) : Object.assign({}, prefill || {});
     const dlg = $("#dlg");
     const input = (f) => {
       const [name, type, o = {}] = f, v = rec[name] != null ? rec[name] : (o.def != null ? o.def : "");
@@ -264,15 +289,26 @@
       const err = reg.validate && reg.validate(data);
       if (err) { $("#ferr").textContent = err; return; }
       if (reg.temp && !tempLive() && !id) { $("#ferr").textContent = "Temporary staffing is OFF."; return; }
-      if (id) Object.assign(rec, data, { modified: new Date().toISOString() });
-      else { state.seq[key]++; state.records[key].push(Object.assign({ id: reg.prefix + String(state.seq[key]).padStart(4, "0"), created: new Date().toISOString() }, data)); }
+      const dup = findDuplicate(key, data, id);
+      if (dup && !confirm(`This looks like a duplicate of ${dup.id} (${dup[reg.list[0]] || ""}). Save anyway?`)) return;
+      if (id) {
+        const changed = Object.keys(data).filter(k => String(rec[k] || "") !== data[k]);
+        Object.assign(rec, data, { modified: new Date().toISOString() });
+        if (changed.length) logChange(key, id, "updated", changed);
+      } else {
+        const nid = newId(key);
+        state.records[key].push(Object.assign({ id: nid, created: new Date().toISOString() }, data));
+        logChange(key, nid, "created");
+      }
       save(); dlg.close(); route(); toast("Saved");
     });
     dlg.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => dlg.close()));
     const del = $("#del");
     if (del) del.addEventListener("click", () => {
       if (!confirm(`Delete ${id}? This cannot be undone. Check retention obligations before deleting.`)) return;
-      state.records[key] = state.records[key].filter(r => r.id !== id); save(); dlg.close(); route(); toast("Deleted");
+      state.records[key] = state.records[key].filter(r => r.id !== id); logChange(key, id, "deleted"); save(); dlg.close();
+      if (location.hash.startsWith("#/view/")) location.hash = "#/r/" + key; else route();
+      toast("Deleted");
     });
     dlg.showModal();
   }
@@ -284,6 +320,319 @@
     download(`Haverton ${reg.title} ${iso(today())}.csv`, lines.join("\n"), "text/csv");
   }
   function download(name, text, type) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+
+  /* ---------------- linked records ---------------- */
+  function findRec(key, id) { return (state.records[key] || []).find(r => r.id === id); }
+  function recLabel(key, rec) {
+    if (!rec) return "";
+    const reg = regByKey(key);
+    const main = { vacancies: "Job Title", submissions: "Candidate ID", placements: "Job Title", assignments: "Role", compliance: "Candidate ID", awr: "Worker ID", followups: "Action", invoices: "Invoice Type", cases: "Type", audits: "Audit Area" }[key] || reg.list[0];
+    let v = rec[main] || "";
+    if (key === "compliance" || key === "submissions") { const c = findRec("candidates", rec["Candidate ID"]); v = c ? c["Full Name"] : v; }
+    if (key === "awr") { const c = findRec("candidates", rec["Worker ID"]); v = c ? c["Full Name"] : v; }
+    return v;
+  }
+  function refLink(key, id) {
+    if (!id) return "";
+    const r = findRec(key, id);
+    if (!r) return `${esc(id)} <span class="muted small">(not found)</span>`;
+    return `<a href="#/view/${key}/${encodeURIComponent(id)}">${esc(id)}</a> <span class="muted small">${esc(recLabel(key, r))}</span>`;
+  }
+  /* Every record in any register that points at this one */
+  function relatedTo(key, id) {
+    const out = [];
+    HAV.registers.forEach(reg => {
+      const refFields = reg.fields.filter(f => f[1] === "ref" && f[2].ref === key).map(f => f[0]);
+      const extra = ["followups", "cases"].includes(reg.key) ? ["Related ID"] : reg.key === "invoices" ? ["Placement / Assignment ID"] : [];
+      const fields = refFields.concat(extra);
+      if (!fields.length) return;
+      const rows = state.records[reg.key].filter(r => fields.some(f => r[f] === id));
+      if (rows.length) out.push([reg, rows]);
+    });
+    return out;
+  }
+  function activityFor(key, id) { return state.activity.filter(a => a.key === key && a.recId === id); }
+
+  function pageView(key, id) {
+    const reg = regByKey(key), rec = reg && findRec(key, id);
+    if (!rec) return pageNotFound();
+    const statusV = valueOf(reg, rec, reg.status);
+    const details = reg.fields.map(f => {
+      const [name, type, o = {}] = f, v = valueOf(reg, rec, name);
+      if (v === "" || v == null || (type === "derived" && !v && v !== 0)) return "";
+      let shown;
+      if (type === "ref") shown = refLink(o.ref, v);
+      else if (type === "select" || (type === "derived" && /Status/.test(name))) shown = badge(v);
+      else if (type === "derived") shown = fmt(v, o.fmt);
+      else if (type === "email") shown = `<a href="mailto:${esc(v)}">${esc(v)}</a>`;
+      else if (type === "tel") shown = `<a href="tel:${esc(String(v).replace(/\s/g, ""))}">${esc(v)}</a>`;
+      else if (type === "textarea") shown = esc(v).replace(/\n/g, "<br>");
+      else shown = fmt(v, type);
+      return `<div class="kv ${type === "textarea" ? "wide" : ""}"><dt>${esc(name)}</dt><dd>${shown}</dd></div>`;
+    }).join("");
+    const rel = relatedTo(key, id);
+    const relHtml = rel.length ? rel.map(([r2, rows]) => `<h3>${esc(r2.title)} <span class="count">${rows.length}</span></h3>` +
+      table(["ID", "Name", r2.status], rows.map(x => [`<a href="#/view/${r2.key}/${encodeURIComponent(x.id)}">${esc(x.id)}</a>`, esc(recLabel(r2.key, x) || ""), badge(valueOf(r2, x, r2.status))]), "compact")).join("")
+      : `<p class="muted">Nothing is linked to this record yet.</p>`;
+
+    let summary = "";
+    if (key === "clients") {
+      const fees = state.records.placements.filter(p => p["Client ID"] === id).reduce((a, p) => a + num(p["Salary"]) * num(p["Fee %"]) / 100, 0);
+      const invReg = regByKey("invoices"), inv = state.records.invoices.filter(i => i["Client ID"] === id);
+      const outst = inv.reduce((a, i) => a + valueOf(invReg, i, "Outstanding"), 0);
+      const openV = state.records.vacancies.filter(v => v["Client ID"] === id && v["Vacancy Status"] === "Open").length;
+      const limit = num(rec["Credit Limit"]);
+      summary = `<section class="tiles mini">
+        <div class="tile"><span class="tile-v">${openV}</span><span class="tile-l">Open vacancies</span></div>
+        <div class="tile"><span class="tile-v">${gbp.format(fees)}</span><span class="tile-l">Placement fees</span></div>
+        <div class="tile ${limit && outst > limit ? "red" : ""}"><span class="tile-v">${gbp.format(outst)}</span><span class="tile-l">Outstanding${limit ? " of " + gbp.format(limit) + " limit" : ""}</span></div></section>`;
+    }
+    let matches = "";
+    if (key === "candidates" && !["Do Not Contact", "Inactive", "Placed"].includes(rec["Current Stage"])) {
+      const comp = state.records.compliance.find(c => c["Candidate ID"] === id);
+      const role = String(rec["Target Role"] || "").toLowerCase();
+      const open = state.records.vacancies.filter(v => v["Vacancy Status"] === "Open" && role && String(v["Job Title"] || "").toLowerCase().includes(role.split(" ").slice(-1)[0]));
+      matches = `<section class="card"><h2>Matching Open Vacancies</h2>
+        <p class="muted small">Matched on target role. Compliance: ${comp ? badge(complianceRag(comp)) : `<span class="badge n">No compliance record</span>`}. Only submit with recorded consent for the specific vacancy.</p>
+        ${open.length ? table(["Vacancy", "Client", "Location", "Salary / Rate", ""], open.map(v => [`<a href="#/view/vacancies/${encodeURIComponent(v.id)}">${esc(v["Job Title"])}</a>`, refLink("clients", v["Client ID"]), esc(v["Location"] || ""), v["Salary / Charge Rate"] ? gbp.format(num(v["Salary / Charge Rate"])) : "", `<button class="link" data-submit="${esc(v.id)}">Create submission</button>`]), "compact") : `<p class="muted">No open vacancies match this candidate’s target role.</p>`}</section>`;
+    }
+    const acts = activityFor(key, id).map(a => ({ ts: a.date + "T12:00", html: `<span class="badge n">${esc(a.type)}</span> ${esc(a.text)}${a.by ? ` <span class="muted small">by ${esc(a.by)}</span>` : ""}`, date: a.date, del: a.id }))
+      .concat(state.audit.filter(a => a.key === key && a.id === id).map(a => ({ ts: a.ts, html: `<span class="muted">Record ${esc(a.action)}${a.fields.length ? ": " + esc(a.fields.slice(0, 6).join(", ")) + (a.fields.length > 6 ? "…" : "") : ""}</span>`, date: a.ts.slice(0, 10) })))
+      .sort((a, b) => b.ts.localeCompare(a.ts));
+    return `<p class="crumb"><a href="#/r/${key}">${esc(reg.title)}</a> / ${esc(id)}</p>` +
+      `<header class="page-head"><h1>${esc(recLabel(key, rec) || id)} ${badge(statusV)}</h1><p>${esc(reg.title.replace(/s$/, ""))} record <code>${esc(id)}</code>${rec.created ? " · created " + fmtDate(rec.created.slice(0, 10)) : ""}${rec.modified ? " · updated " + fmtDate(rec.modified.slice(0, 10)) : ""}</p></header>
+      <div class="btn-row"><button class="btn" id="v-edit">Edit</button><button class="btn ghost" id="v-note">Log activity</button><button class="btn ghost" id="v-fu">Add follow up</button></div>
+      ${summary}
+      <div class="grid2 view"><section class="card"><h2>Details</h2><dl class="kvs">${details}</dl></section>
+      <div><section class="card"><h2>Linked Records</h2>${relHtml}</section>${matches}</div></div>
+      <section class="card"><h2>Activity And History <span class="count">${acts.length}</span></h2>
+        ${acts.length ? `<ul class="timeline">${acts.map(a => `<li><time>${fmtDate(a.date)}</time><div>${a.html}${a.del ? ` <button class="link small" data-delact="${a.del}">remove</button>` : ""}</div></li>`).join("")}</ul>` : `<p class="muted">No activity yet. Use <strong>Log activity</strong> to record calls, emails, meetings and notes.</p>`}
+      </section>`;
+  }
+
+  function openActivity(key, id) {
+    const dlg = $("#dlg");
+    dlg.innerHTML = `<form method="dialog" id="act-form">
+      <div class="dlg-head"><h2>Log activity · ${esc(id)}</h2><button type="button" class="x" data-close aria-label="Close">×</button></div>
+      <div class="dlg-body"><div class="form-grid">
+        <label class="fld"><span>Type *</span><select name="type" required>${["Call", "Email", "Meeting", "Interview", "Reference Check", "Note"].map(t => `<option>${t}</option>`).join("")}</select></label>
+        <label class="fld"><span>Date *</span><input type="date" name="date" required value="${iso(today())}"></label>
+        <label class="fld"><span>By</span><input name="by" value="${esc(state.lastBy || "")}" placeholder="Your name"></label>
+        <label class="fld wide"><span>Summary *</span><textarea name="text" rows="3" required></textarea><small>Facts only, minimum necessary. No health, DBS or bank details, and nothing about people receiving care.</small></label>
+        <label class="fld wide"><span>Next action (optional)</span><input name="next" placeholder="For example: call back with interview feedback"></label>
+        <label class="fld"><span>Next action due</span><input type="date" name="due"></label>
+      </div><p class="form-err" id="ferr" role="alert"></p></div>
+      <div class="dlg-foot"><span class="spacer"></span><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn">Save</button></div></form>`;
+    const form = $("#act-form");
+    form.addEventListener("submit", e => {
+      e.preventDefault(); if (!form.reportValidity()) return;
+      const d = Object.fromEntries([...new FormData(form)].map(([k, v]) => [k, String(v).trim()]));
+      if (d.next && !d.due) { $("#ferr").textContent = "Add a due date for the next action."; return; }
+      state.actSeq++; state.activity.push({ id: "AC" + state.actSeq, key, recId: id, type: d.type, date: d.date, text: d.text, by: d.by });
+      if (d.by) state.lastBy = d.by;
+      if (d.next) {
+        const rec = findRec(key, id), nid = newId("followups");
+        state.records.followups.push({ id: nid, created: new Date().toISOString(), "Type": ({ clients: "Client", candidates: "Candidate", vacancies: "Vacancy", placements: "Placement", assignments: "Assignment" })[key] || "Internal", "Related ID": id, "Organisation / Candidate": recLabel(key, rec), "Action": d.next, "Due Date": d.due, "Owner": d.by || "Director", "Status": "Open" });
+        logChange("followups", nid, "created");
+      }
+      save(); dlg.close(); route(); toast(d.next ? "Activity and follow up saved" : "Activity saved");
+    });
+    dlg.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => dlg.close()));
+    dlg.showModal();
+  }
+
+  /* ---------------- pipeline board ---------------- */
+  const BOARDS = {
+    submissions: { title: "Candidate Submissions", key: "submissions", field: "Stage", cols: ["Draft", "Submitted", "Interview", "Offer", "Placed", "Rejected", "Withdrawn"] },
+    clients: { title: "Client Pipeline", key: "clients", field: "Client Status", cols: ["Lead", "Prospect", "Qualified", "Terms Sent", "Active Client", "Expansion", "Dormant", "Do Not Supply"] },
+    vacancies: { title: "Vacancies", key: "vacancies", field: "Vacancy Status", cols: ["Open", "On Hold", "Filled", "Closed"] }
+  };
+  function pagePipeline(which) {
+    const b = BOARDS[which] || BOARDS.submissions, reg = regByKey(b.key);
+    const tabs = Object.entries(BOARDS).map(([k, x]) => `<a class="tab ${x === b ? "on" : ""}" href="#/pipeline/${k}">${esc(x.title)}</a>`).join("");
+    const card = r => {
+      let sub = "";
+      if (b.key === "submissions") sub = `${esc(recLabel("vacancies", findRec("vacancies", r["Vacancy ID"])) || r["Vacancy ID"] || "")}${r["Client ID"] ? " · " + esc(recLabel("clients", findRec("clients", r["Client ID"]))) : ""}`;
+      if (b.key === "clients") sub = esc(r["Service Type"] || "");
+      if (b.key === "vacancies") sub = `${esc(recLabel("clients", findRec("clients", r["Client ID"])) || "")}${r["Target Fill Date"] ? " · fill by " + fmtDate(r["Target Fill Date"]) : ""}`;
+      const fu = state.records.followups.filter(f => f["Related ID"] === r.id && f["Status"] !== "Closed").sort((x, y) => String(x["Due Date"]).localeCompare(String(y["Due Date"])))[0];
+      const over = fu && fu["Due Date"] < iso(today());
+      return `<article class="kcard" draggable="true" data-id="${esc(r.id)}">
+        <a href="#/view/${b.key}/${encodeURIComponent(r.id)}"><strong>${esc(recLabel(b.key, r) || r.id)}</strong></a>
+        <span class="muted small">${sub}</span>
+        ${b.key === "submissions" && r["Consent Confirmed"] !== "Yes" ? `<span class="badge r">No consent</span>` : ""}
+        ${fu ? `<span class="kfu ${over ? "over" : ""}">Next: ${esc(fu["Action"])} · ${fmtDate(fu["Due Date"])}</span>` : ""}
+        <select class="kmove" aria-label="Move ${esc(r.id)}">${b.cols.map(c => `<option ${c === r[b.field] ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>
+      </article>`;
+    };
+    const rows = state.records[b.key];
+    const unassigned = rows.filter(r => !b.cols.includes(r[b.field]));
+    return header("Pipeline Board", "Drag cards between columns, or use the menu on each card. Rules still apply: a submission cannot move past Draft without recorded consent.") +
+      `<nav class="tabs">${tabs}</nav>` +
+      (rows.length ? `<div class="kanban" data-board="${which in BOARDS ? which : "submissions"}">${b.cols.map(c => {
+        const items = rows.filter(r => r[b.field] === c);
+        return `<section class="kcol" data-col="${esc(c)}"><header>${badge(c)} <span class="count">${items.length}</span></header><div class="kdrop">${items.map(card).join("")}</div></section>`;
+      }).join("")}</div>` : `<div class="empty">No ${esc(reg.title.toLowerCase())} yet. <a href="#/r/${b.key}">Add the first record</a>.</div>`) +
+      (unassigned.length ? callout("Records without a status", `${unassigned.length} record(s) have no ${b.field.toLowerCase()} and are not shown: ${unassigned.map(r => r.id).join(", ")}.`, "warn") : "");
+  }
+  function moveCard(which, id, col) {
+    const b = BOARDS[which], reg = regByKey(b.key), rec = findRec(b.key, id);
+    if (!rec || rec[b.field] === col) return;
+    const trial = Object.assign({}, rec, { [b.field]: col });
+    const err = reg.validate && reg.validate(trial);
+    if (err) { toast(err); route(); return; }
+    rec[b.field] = col; rec.modified = new Date().toISOString();
+    if (b.key === "submissions" && col === "Submitted" && !rec["Submitted Date"]) rec["Submitted Date"] = iso(today());
+    if (b.key === "submissions" && col === "Offer" && !rec["Offer Date"]) rec["Offer Date"] = iso(today());
+    if (b.key === "submissions" && ["Placed", "Rejected", "Withdrawn"].includes(col) && !rec["Outcome Date"]) rec["Outcome Date"] = iso(today());
+    logChange(b.key, id, "updated", [b.field]); save(); route(); toast(`${id} moved to ${col}`);
+  }
+
+  /* ---------------- search ---------------- */
+  function pageSearch(q) {
+    q = (q || "").trim();
+    const ql = q.toLowerCase();
+    const groups = q.length < 2 ? [] : HAV.registers.map(reg => [reg, state.records[reg.key].filter(r => (r.id + " " + reg.fields.map(f => valueOf(reg, r, f[0])).join(" ")).toLowerCase().includes(ql))]).filter(g => g[1].length);
+    const acts = q.length < 2 ? [] : state.activity.filter(a => a.text.toLowerCase().includes(ql));
+    return header("Search", q ? `Results for “${q}” across every register and activity note.` : "Type at least two characters in the search box.") +
+      `<form class="toolbar" id="sform"><input type="search" id="sq" value="${esc(q)}" placeholder="Name, email, postcode, ID, job title…" aria-label="Search everything"><button class="btn">Search</button></form>` +
+      (q.length >= 2 && !groups.length && !acts.length ? `<div class="empty">Nothing found for “${esc(q)}”.</div>` : "") +
+      groups.map(([reg, rows]) => `<section class="card"><h2>${esc(reg.title)} <span class="count">${rows.length}</span></h2>${table(["ID", reg.list[0], reg.status], rows.slice(0, 50).map(r => [`<a href="#/view/${reg.key}/${encodeURIComponent(r.id)}">${esc(r.id)}</a>`, esc(recLabel(reg.key, r)), badge(valueOf(reg, r, reg.status))]), "compact")}</section>`).join("") +
+      (acts.length ? `<section class="card"><h2>Activity Notes <span class="count">${acts.length}</span></h2>${table(["Date", "Record", "Note"], acts.slice(0, 50).map(a => [fmtDate(a.date), `<a href="#/view/${a.key}/${encodeURIComponent(a.recId)}">${esc(a.recId)}</a>`, esc(a.text)]), "compact")}</section>` : "");
+  }
+
+  /* ---------------- reports ---------------- */
+  function bars(rows, fmtV, opts = {}) {
+    const max = Math.max(1, ...rows.map(r => r[1]));
+    return `<div class="bars" role="table">${rows.map(([label, v, note, goal]) => `<div class="bar-row" role="row" title="${esc(label)}: ${esc(fmtV(v))}${note ? " (" + esc(note) + ")" : ""}">
+      <span class="bar-l" role="cell">${esc(label)}${note ? `<small>${esc(note)}</small>` : ""}</span>
+      <span class="bar-t" role="cell"><span class="bar-f" style="width:${Math.min(100, Math.max(v ? 2 : 0, v / (goal || max) * 100)).toFixed(1)}%"></span></span>
+      <span class="bar-v" role="cell">${esc(fmtV(v))}</span></div>`).join("")}</div>`;
+  }
+  const pct = (a, b) => b ? Math.round(a / b * 100) : null;
+  function pageReports() {
+    const R = state.records, t = iso(today());
+    const subs = R.submissions;
+    const reached = s => {
+      const st = s["Stage"];
+      return {
+        submitted: st && st !== "Draft",
+        interview: !!s["Interview Date"] || ["Interview", "Offer", "Placed"].includes(st),
+        offer: !!s["Offer Date"] || ["Offer", "Placed"].includes(st),
+        placed: st === "Placed"
+      };
+    };
+    const f = { submitted: 0, interview: 0, offer: 0, placed: 0 };
+    subs.forEach(s => { const r = reached(s); Object.keys(f).forEach(k => { if (r[k]) f[k]++; }); });
+    const cvI = pct(f.interview, f.submitted), iO = pct(f.offer, f.interview), oS = pct(f.placed, f.offer);
+
+    const ttf = R.placements.map(p => { const v = findRec("vacancies", p["Vacancy ID"]); if (!v || !v["Open Date"] || !p["Start Date"]) return null; return Math.round((new Date(p["Start Date"]) - new Date(v["Open Date"])) / 864e5); }).filter(x => x != null && x >= 0).sort((a, b) => a - b);
+    const median = ttf.length ? (ttf.length % 2 ? ttf[(ttf.length - 1) / 2] : Math.round((ttf[ttf.length / 2 - 1] + ttf[ttf.length / 2]) / 2)) : null;
+
+    const feeBy = {};
+    R.placements.forEach(p => { const k = p["Client ID"] || "Unassigned"; feeBy[k] = (feeBy[k] || 0) + num(p["Salary"]) * num(p["Fee %"]) / 100; });
+    const invReg = regByKey("invoices");
+    R.invoices.filter(i => i["Invoice Type"] === "Temporary Supply").forEach(i => { const k = i["Client ID"] || "Unassigned"; feeBy[k] = (feeBy[k] || 0) + num(i["Net"]); });
+    const feeRows = Object.entries(feeBy).sort((a, b) => b[1] - a[1]);
+    const feeTotal = feeRows.reduce((a, r) => a + r[1], 0);
+    const topShare = feeRows.length ? pct(feeRows[0][1], feeTotal) : null;
+
+    const due12 = R.placements.filter(p => p["Start Date"] && addDays(p["Start Date"], 84) <= t && p["Status"] !== "Cancelled");
+    const ret12 = pct(due12.filter(p => p["12 Week Retained"] === "Yes").length, due12.length);
+
+    const outstanding = R.invoices.reduce((a, i) => a + valueOf(invReg, i, "Outstanding"), 0);
+    const overdue = R.invoices.filter(i => daysOverdue(i) > 0);
+    const avgOver = overdue.length ? Math.round(overdue.reduce((a, i) => a + daysOverdue(i), 0) / overdue.length) : 0;
+
+    const wk = weekKey(), wkEnd = addDays(wk, 7);
+    const thisWeek = state.activity.filter(a => a.date >= wk && a.date < wkEnd);
+    const cnt = ty => thisWeek.filter(a => a.type === ty).length;
+    const newClients = R.clients.filter(c => (c.created || "").slice(0, 10) >= wk).length;
+
+    const sources = {};
+    R.candidates.forEach(c => { const k = (c["Source Of Data"] || "Not recorded").trim() || "Not recorded"; sources[k] = (sources[k] || 0) + 1; });
+    const stages = HAV.lists.clientStatus.map(s => [s, R.clients.filter(c => c["Client Status"] === s).length]);
+
+    const kpi = (label, val, target, ok) => `<div class="tile ${ok === false ? "red" : ""}"><span class="tile-v">${val == null ? "—" : val}</span><span class="tile-l">${esc(label)}</span>${target ? `<span class="tile-t">${esc(target)}</span>` : ""}</div>`;
+    return header("Reports", "Live figures calculated from your registers and activity log. Figures describe your records, not verified business results.") +
+      `<section class="tiles">
+        ${kpi("CV to interview", cvI == null ? null : cvI + "%", "Investigate if under 20%", cvI == null ? null : cvI >= 20)}
+        ${kpi("Interview to offer", iO == null ? null : iO + "%", "Trend by client")}
+        ${kpi("Offer to start", oS == null ? null : oS + "%", "Target over 80%", oS == null ? null : oS > 80)}
+        ${kpi("12 week retention", ret12 == null ? null : ret12 + "%", "Target over 85%", ret12 == null ? null : ret12 > 85)}
+        ${kpi("Median time to fill", median == null ? null : median + " days", "Vacancy open to start")}
+        ${kpi("Top client share", topShare == null ? null : topShare + "%", "Review if over 25%", topShare == null ? null : topShare <= 25)}
+      </section>
+      <div class="grid2">
+        <section class="card"><h2>Recruitment Funnel</h2>${bars([["Submitted", f.submitted], ["Interview", f.interview], ["Offer", f.offer], ["Placed", f.placed]], v => String(v))}
+          <p class="muted small">Counts submissions that reached each stage. A submission is only counted after it leaves Draft.</p></section>
+        <section class="card"><h2>This Week’s Activity</h2>${bars([["Follow-up calls", cnt("Call"), "target 15–20", 15], ["Emails", cnt("Email"), "target 10–15", 10], ["Meetings", cnt("Meeting"), "target 3", 3], ["Interviews", cnt("Interview"), "", 5], ["New client records", newClients, "target 20 researched", 20]], v => String(v))}
+          <p class="muted small">Bars show progress towards each weekly target, from activity logged since ${fmtDate(wk)}. Targets are the founder launch rhythm in the operating system.</p></section>
+        <section class="card"><h2>Fees By Client</h2>${feeRows.length ? bars(feeRows.slice(0, 10).map(([k, v]) => [recLabel("clients", findRec("clients", k)) || k, v]), v => gbp.format(v)) + `<p class="muted small">Permanent fees (salary × fee %) plus temporary supply invoices, ex VAT. Total ${gbp.format(feeTotal)}.</p>` : `<p class="muted">No placements or temporary invoices yet.</p>`}</section>
+        <section class="card"><h2>Client Pipeline</h2>${bars(stages, v => String(v))}</section>
+        <section class="card"><h2>Candidate Sources</h2>${Object.keys(sources).length ? bars(Object.entries(sources).sort((a, b) => b[1] - a[1]).slice(0, 10), v => String(v)) : `<p class="muted">No candidates yet.</p>`}</section>
+        <section class="card"><h2>Cash Position</h2>${table(["Measure", "Value"], [["Outstanding invoices (inc VAT)", gbp.format(outstanding)], ["Invoices overdue", String(overdue.length)], ["Average days overdue", overdue.length ? avgOver + " days" : "—"], ["Rule", "Freeze new exposure if debtor days exceed 45"]].map(r => r.map(esc)), "compact")}</section>
+      </div>`;
+  }
+
+  /* ---------------- CSV import and calendar export ---------------- */
+  function parseCSV(text) {
+    const rows = []; let row = [], cell = "", q = false;
+    text = text.replace(/^﻿/, "");
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+      else if (c === '"') q = true;
+      else if (c === ",") { row.push(cell); cell = ""; }
+      else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+      else cell += c;
+    }
+    if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(r => r.some(c => c.trim() !== ""));
+  }
+  function toIsoDate(v) {
+    v = String(v || "").trim(); if (!v) return "";
+    let m = v.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    m = v.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);
+    if (m) { const y = m[3].length === 2 ? "20" + m[3] : m[3]; return `${y}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`; }
+    return v;
+  }
+  function importCSV(key, text) {
+    const reg = regByKey(key), rows = parseCSV(text);
+    if (rows.length < 2) throw new Error("No data rows found");
+    const norm = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, "");
+    let hi = rows.findIndex(r => r.some(c => norm(c) === "id" || /id$/.test(norm(c)) && reg.fields.some(f => norm(f[0]) === norm(c)) || reg.fields.some(f => norm(f[0]) === norm(c))));
+    if (hi < 0) throw new Error("No matching column headings. Use the headings from the Export CSV file.");
+    const head = rows[hi].map(norm), idCol = head.findIndex((h, i) => h === "id" || (h.endsWith("id") && h === norm(reg.title.replace(/s$/, "") + " ID")) || (i === 0 && h.endsWith("id") && !reg.fields.some(f => norm(f[0]) === h)));
+    const map = reg.fields.filter(f => f[1] !== "derived").map(f => [f, head.indexOf(norm(f[0]))]).filter(x => x[1] >= 0);
+    if (!map.length) throw new Error("No matching column headings. Use the headings from the Export CSV file.");
+    const existing = new Set(state.records[key].map(r => r.id));
+    const recs = rows.slice(hi + 1).map(r => {
+      const o = {};
+      map.forEach(([f, i]) => { let v = (r[i] || "").trim(); if (f[1] === "date") v = toIsoDate(v); if (["money", "number", "pct"].includes(f[1])) v = v.replace(/[£,%\s]/g, ""); o[f[0]] = v; });
+      const wanted = idCol >= 0 ? (r[idCol] || "").trim() : "";
+      return [wanted, o];
+    }).filter(([, o]) => Object.values(o).some(v => v));
+    if (!recs.length) throw new Error("No data rows found");
+    if (!confirm(`Import ${recs.length} record(s) into ${reg.title}? ${map.length} column(s) matched: ${map.map(m => m[0][0]).slice(0, 8).join(", ")}${map.length > 8 ? "…" : ""}`)) return 0;
+    recs.forEach(([wanted, o]) => {
+      let id = wanted && !existing.has(wanted) && new RegExp("^" + reg.prefix + "\\d+$").test(wanted) ? wanted : "";
+      if (id) { const n = parseInt(id.slice(reg.prefix.length), 10); if (n > state.seq[key]) state.seq[key] = n; } else id = newId(key);
+      existing.add(id);
+      state.records[key].push(Object.assign({ id, created: new Date().toISOString() }, o));
+      logChange(key, id, "imported");
+    });
+    save(); return recs.length;
+  }
+  function exportICS() {
+    const open = state.records.followups.filter(f => f["Status"] !== "Closed" && /^\d{4}-\d{2}-\d{2}$/.test(f["Due Date"] || ""));
+    if (!open.length) { toast("No open follow ups with a due date"); return; }
+    const escI = s => String(s || "").replace(/\\/g, "\\\\").replace(/[,;]/g, m => "\\" + m).replace(/\n/g, "\\n");
+    const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+    const ev = open.map(f => { const d = f["Due Date"].replace(/-/g, ""), n = addDays(f["Due Date"], 1).replace(/-/g, "");
+      return ["BEGIN:VEVENT", `UID:${f.id}@operation.havertoncare.co.uk`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${n}`, `SUMMARY:${escI(f["Action"] + (f["Organisation / Candidate"] ? " – " + f["Organisation / Candidate"] : ""))}`, `DESCRIPTION:${escI("Haverton follow up " + f.id + (f["Owner"] ? " · owner " + f["Owner"] : ""))}`, "BEGIN:VALARM", "TRIGGER:PT9H", "ACTION:DISPLAY", "DESCRIPTION:Follow up due", "END:VALARM", "END:VEVENT"].join("\r\n"); });
+    download(`Haverton Follow Ups ${iso(today())}.ics`, ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Haverton Care Limited//Operations//EN", "CALSCALE:GREGORIAN"].concat(ev, ["END:VCALENDAR"]).join("\r\n"), "text/calendar");
+  }
 
   function pageGoLive() {
     const g = state.golive, live = tempLive();
@@ -502,6 +851,10 @@
     switch (parts[0]) {
       case "": html = pageDashboard(); break;
       case "r": html = pageRegister(parts[1]); break;
+      case "view": html = pageView(parts[1], decodeURIComponent(parts.slice(2).join("/"))); break;
+      case "pipeline": html = pagePipeline(parts[1]); break;
+      case "search": html = pageSearch(decodeURIComponent(parts.slice(1).join("/"))); break;
+      case "reports": html = pageReports(); break;
       case "golive": html = pageGoLive(); break;
       case "controls": html = pageControls(); break;
       case "procedures": html = pageProcedures(parts[1]); break;
@@ -531,7 +884,37 @@
       $("#sf").addEventListener("change", () => drawRegisterTable(key));
       $("#add").addEventListener("click", () => openForm(key));
       $("#csv").addEventListener("click", () => csvFor(key));
-      $("#reg-table").addEventListener("click", e => { const b = e.target.closest("[data-edit]"); if (b) openForm(key, b.dataset.edit); });
+      const ics = $("#ics"); if (ics) ics.addEventListener("click", exportICS);
+      $("#csvin").addEventListener("change", e => {
+        const file = e.target.files[0]; if (!file) return;
+        const rd = new FileReader();
+        rd.onload = () => { try { const n = importCSV(key, String(rd.result)); if (n) { route(); toast(`Imported ${n} record(s)`); } } catch (err) { toast("Import failed: " + err.message); } e.target.value = ""; };
+        rd.readAsText(file);
+      });
+    }
+    if (parts[0] === "view") {
+      const key = parts[1], id = decodeURIComponent(parts.slice(2).join("/")), rec = findRec(key, id);
+      if (rec) {
+        $("#v-edit").addEventListener("click", () => openForm(key, id));
+        $("#v-note").addEventListener("click", () => openActivity(key, id));
+        $("#v-fu").addEventListener("click", () => openForm("followups", null, { "Type": ({ clients: "Client", candidates: "Candidate", vacancies: "Vacancy", placements: "Placement", assignments: "Assignment" })[key] || "Internal", "Related ID": id, "Organisation / Candidate": recLabel(key, rec), "Status": "Open", "Owner": state.lastBy || "" }));
+      }
+    }
+    if (parts[0] === "pipeline") {
+      const board = app.querySelector(".kanban");
+      if (board) {
+        const which = board.dataset.board;
+        let dragId = null;
+        board.addEventListener("dragstart", e => { const c = e.target.closest(".kcard"); if (!c) return; dragId = c.dataset.id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", dragId); c.classList.add("dragging"); });
+        board.addEventListener("dragend", e => { const c = e.target.closest(".kcard"); if (c) c.classList.remove("dragging"); board.querySelectorAll(".kcol.over").forEach(x => x.classList.remove("over")); });
+        board.addEventListener("dragover", e => { const col = e.target.closest(".kcol"); if (!col) return; e.preventDefault(); board.querySelectorAll(".kcol.over").forEach(x => x !== col && x.classList.remove("over")); col.classList.add("over"); });
+        board.addEventListener("drop", e => { const col = e.target.closest(".kcol"); if (!col) return; e.preventDefault(); const id = dragId || e.dataTransfer.getData("text/plain"); dragId = null; moveCard(which, id, col.dataset.col); });
+        board.addEventListener("change", e => { const s = e.target.closest(".kmove"); if (s) moveCard(which, s.closest(".kcard").dataset.id, s.value); });
+      }
+    }
+    if (parts[0] === "search") {
+      $("#sform").addEventListener("submit", e => { e.preventDefault(); const q = $("#sq").value.trim(); location.hash = "#/search/" + encodeURIComponent(q); });
+      if (!parts[1]) $("#sq").focus();
     }
     if (parts[0] === "") app.querySelectorAll("[data-sb]").forEach(cb => cb.addEventListener("change", () => {
       const wk = weekKey(); state.scoreboard[wk] = state.scoreboard[wk] || {}; state.scoreboard[wk][cb.dataset.sb] = cb.checked; save();
@@ -574,7 +957,7 @@
             const s = JSON.parse(rd.result);
             if (!s || typeof s !== "object" || !s.records) throw new Error("Not a Haverton backup");
             if (!confirm("Replace all data in this browser with the imported backup?")) return;
-            state = Object.assign(blank(), s); HAV.registers.forEach(r => { state.records[r.key] = state.records[r.key] || []; state.seq[r.key] = state.seq[r.key] || 0; });
+            state = normalise(s);
             save(); route(); toast("Backup imported");
           } catch (err) { toast("Import failed: " + err.message); }
         };
@@ -587,6 +970,16 @@
     }
   }
 
+  /* One delegated listener for buttons rendered inside record pages */
+  app.addEventListener("click", e => {
+    const m = (location.hash || "").match(/^#\/view\/([^/]+)\/(.+)$/);
+    if (!m) return;
+    const id = decodeURIComponent(m[2]);
+    const d = e.target.closest("[data-delact]");
+    if (d && confirm("Remove this activity note?")) { state.activity = state.activity.filter(a => a.id !== d.dataset.delact); save(); route(); }
+    const s = e.target.closest("[data-submit]");
+    if (s) { const v = findRec("vacancies", s.dataset.submit); openForm("submissions", null, { "Vacancy ID": s.dataset.submit, "Candidate ID": id, "Client ID": v ? v["Client ID"] : "", "Stage": "Draft" }); }
+  });
   $("#menu").addEventListener("click", () => document.body.classList.toggle("nav-open"));
   window.addEventListener("hashchange", route);
   route();
