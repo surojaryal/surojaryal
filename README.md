@@ -44,3 +44,7 @@ Example using Cloudflare Pages:
 - `assets/js/app.js`: pages, calculations and storage.
 
 Review the legal and rate content before temporary staffing launch and at least quarterly, in line with the source register.
+
+## Encrypted build for hosts without a login
+
+`node scripts/build-encrypted.js "<passphrase>"` writes `dist/`: an unlock page, `unlock.js` and `payload.json` holding the whole site encrypted with AES-256-GCM (key derived from the passphrase with PBKDF2-SHA256, 600,000 iterations). The host only stores ciphertext, so the site can sit on a free static host such as Netlify or Cloudflare Pages without server-side password protection. The passphrase never leaves the browser. To change the passphrase, rebuild and redeploy. Register data is still held in the browser's localStorage on the unlocked page.
