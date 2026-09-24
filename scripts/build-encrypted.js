@@ -11,7 +11,9 @@ const read = f => fs.readFileSync(path.join(root, f), "utf8");
 let html = read("index.html");
 html = html.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, "");
 html = html.replace(/<link rel="icon"[^>]*>/, `<link rel="icon" href="data:image/svg+xml;base64,${Buffer.from(read("assets/img/favicon.svg")).toString("base64")}">`);
-html = html.replace(/<link rel="stylesheet" href="assets\/css\/styles.css">/, `<style>${read("assets/css/styles.css")}</style>`);
+const font = f => `data:font/woff2;base64,${fs.readFileSync(path.join(root, "assets/fonts", f)).toString("base64")}`;
+const css = read("assets/css/styles.css").replace(/url\("\.\.\/fonts\/([^"]+)"\)/g, (_, f) => `url("${font(f)}")`);
+html = html.replace(/<link rel="stylesheet" href="assets\/css\/styles.css">/, () => `<style>${css}</style>`);
 html = html.replace(/<script src="assets\/js\/data.js"><\/script>\s*<script src="assets\/js\/procedures.js"><\/script>\s*<script src="assets\/js\/app.js"><\/script>/,
   `<script>${read("assets/js/data.js")}\n${read("assets/js/procedures.js")}\n${read("assets/js/app.js")}</script>`);
 if (/src="assets\//.test(html) || /href="assets\//.test(html)) throw new Error("Unresolved asset reference");
@@ -34,7 +36,9 @@ const srcIv = crypto.randomBytes(12), srcCipher = crypto.createCipheriv("aes-256
 const srcCt = Buffer.concat([srcCipher.update(srcZip), srcCipher.final(), srcCipher.getAuthTag()]);
 fs.writeFileSync(path.join(dist, "source.json"), JSON.stringify({ v: 1, iv: srcIv.toString("base64"), data: srcCt.toString("base64") }));
 fs.copyFileSync(path.join(root, "unlock", "unlock.js"), path.join(dist, "unlock.js"));
-fs.writeFileSync(path.join(dist, "index.html"), read("unlock/index.html"));
+const unlockFonts = [["Playfair Display", 700, "playfair-display-latin-700-normal.woff2"], ["Manrope", 400, "manrope-latin-400-normal.woff2"], ["Manrope", 700, "manrope-latin-700-normal.woff2"]]
+  .map(([fam, w, f]) => `@font-face { font-family: "${fam}"; src: url("${font(f)}") format("woff2"); font-weight: ${w}; font-display: swap; }`).join("\n    ");
+fs.writeFileSync(path.join(dist, "index.html"), read("unlock/index.html").replace("/*FONTS*/", () => unlockFonts));
 fs.writeFileSync(path.join(dist, "robots.txt"), "User-agent: *\nDisallow: /\n");
-fs.writeFileSync(path.join(dist, "_headers"), `/*\n  X-Robots-Tag: noindex, nofollow\n  X-Content-Type-Options: nosniff\n  X-Frame-Options: DENY\n  Referrer-Policy: no-referrer\n  Cache-Control: no-store\n  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'\n`);
+fs.writeFileSync(path.join(dist, "_headers"), `/*\n  X-Robots-Tag: noindex, nofollow\n  X-Content-Type-Options: nosniff\n  X-Frame-Options: DENY\n  Referrer-Policy: no-referrer\n  Cache-Control: no-store\n  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; font-src data:; connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'\n`);
 console.log(`dist/ built: ${(ct.length / 1024).toFixed(0)} KB encrypted payload`);

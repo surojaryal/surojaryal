@@ -9,32 +9,43 @@
   <title>Haverton Operations</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%231b2b45%27/%3E%3Ctext x=%2716%27 y=%2722.5%27 font-family=%27Arial%27 font-size=%2718%27 font-weight=%27700%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EH%3C/text%3E%3C/svg%3E">
   <style>
-    :root { --bg:#f8f6f1; --card:#fff; --ink:#16242e; --ink2:#4a5a66; --line:#e3ddd1; --brand:#1b2b45; --r:#b3261e; }
+    /*FONTS*/
+    :root { --bg:#f8f6f1; --ink:#16242e; --ink2:#4a5a66; --line:#e3ddd1; --navy:#1b2b45; --navy-deep:#0f1a2c; --gold:#c9a55c; --gold-2:#e6cf98; --r:#b3261e; }
     * { box-sizing: border-box; }
-    body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; padding:16px; }
-    .card { width:100%; max-width:400px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:28px 26px; }
-    .mark { width:44px; height:44px; border-radius:10px; background:linear-gradient(145deg,#e6cf98,#c9a55c); color:#0f1a2c; display:grid; place-items:center; font-weight:800; font-size:24px; font-family:Georgia,'Times New Roman',serif; margin-bottom:14px; }
-    .card { border-top:3px solid #c9a55c; }
-    h1 { font-size:1.25rem; margin:0 0 4px; }
-    p { margin:0 0 16px; color:var(--ink2); font-size:.92rem; }
-    label { display:block; font-weight:600; font-size:.85rem; margin-bottom:6px; }
-    input { width:100%; font:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); }
-    button { width:100%; margin-top:14px; font:inherit; font-weight:600; padding:11px; border:0; border-radius:8px; background:var(--brand); color:#fff; cursor:pointer; }
-    button:disabled { opacity:.6; cursor:wait; }
-    .err { color:var(--r); font-weight:600; font-size:.9rem; min-height:1.3em; margin-top:10px; }
-    .foot { margin-top:18px; font-size:.75rem; color:var(--ink2); }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:16px; color:var(--ink); font:16px/1.55 "Manrope",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 500px at 50% -10%, rgba(201,165,92,.18), transparent 60%), var(--bg); }
+    .card { width:100%; max-width:420px; background:#fff; border:1px solid rgba(201,165,92,.35); border-radius:16px; overflow:hidden; box-shadow:0 24px 60px rgba(15,26,44,.14), 0 2px 6px rgba(15,26,44,.06); }
+    .head { background:linear-gradient(125deg,var(--navy-deep) 0%,var(--navy) 60%,#243a5c 100%); color:#fff; padding:28px 28px 24px; border-bottom:2px solid var(--gold); display:flex; align-items:center; gap:16px; }
+    .mark { width:52px; height:52px; flex:none; border-radius:12px; background:linear-gradient(145deg,var(--gold-2),var(--gold)); color:var(--navy-deep); display:grid; place-items:center; font:700 28px/1 "Playfair Display",Georgia,serif; box-shadow:inset 0 0 0 1px rgba(255,255,255,.4); }
+    .eyebrow { display:block; font-size:.66rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold-2); font-weight:700; margin-bottom:4px; }
+    h1 { margin:0; font:700 1.6rem/1.15 "Playfair Display",Georgia,serif; letter-spacing:.01em; }
+    .body { padding:26px 28px 24px; }
+    p { margin:0 0 18px; color:var(--ink2); font-size:.93rem; }
+    label { display:block; font-weight:700; font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--navy); margin-bottom:8px; }
+    input { width:100%; font:inherit; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:#fbfaf6; color:var(--ink); }
+    input:focus { outline:2px solid var(--gold); outline-offset:1px; background:#fff; }
+    button { width:100%; margin-top:16px; font:inherit; font-weight:700; letter-spacing:.06em; padding:13px; border:1px solid var(--navy); border-radius:10px; color:#fff; cursor:pointer;
+      background:linear-gradient(180deg,#243a5c,var(--navy)); box-shadow:inset 0 -2px 0 var(--gold), 0 4px 12px rgba(15,26,44,.18); }
+    button:hover { background:linear-gradient(180deg,#2b4570,#1f3150); }
+    button:disabled { opacity:.65; cursor:wait; }
+    .err { color:var(--r); font-weight:600; font-size:.9rem; min-height:1.3em; margin-top:12px; }
+    .foot { margin-top:14px; padding-top:14px; border-top:1px solid var(--line); font-size:.74rem; color:var(--ink2); }
   </style>
 </head>
 <body>
   <form class="card" id="f" autocomplete="off">
-    <div class="mark" aria-hidden="true">H</div>
-    <h1>Haverton Operations</h1>
-    <p>Internal system for Haverton Care Limited. Enter the passphrase to continue.</p>
-    <label for="p">Passphrase</label>
-    <input id="p" type="password" autocomplete="current-password" required autofocus>
-    <button id="b" type="submit">Unlock</button>
-    <div class="err" id="e" role="alert"></div>
-    <div class="foot">Content is stored encrypted and unlocked only in your browser. Close the tab to lock it again.</div>
+    <div class="head">
+      <div class="mark" aria-hidden="true">H</div>
+      <div><span class="eyebrow">Haverton Care Limited</span><h1>Haverton Operations</h1></div>
+    </div>
+    <div class="body">
+      <p>Internal operating system. Enter the passphrase to continue.</p>
+      <label for="p">Passphrase</label>
+      <input id="p" type="password" autocomplete="current-password" required autofocus>
+      <button id="b" type="submit">Unlock</button>
+      <div class="err" id="e" role="alert"></div>
+      <div class="foot">Content is stored encrypted and unlocked only in your browser. Close the tab to lock it again.</div>
+    </div>
   </form>
   <script src="unlock.js"></script>
 </body>
