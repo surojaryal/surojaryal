@@ -17,7 +17,7 @@ html = html.replace(/<script src="assets\/js\/data.js"><\/script>\s*<script src=
 if (/src="assets\//.test(html) || /href="assets\//.test(html)) throw new Error("Unresolved asset reference");
 
 /* 2. Encrypt: PBKDF2-SHA256 (600k) -> AES-256-GCM */
-const salt = crypto.randomBytes(16), iv = crypto.randomBytes(12), iterations = 600000;
+const salt = crypto.randomBytes(16), iv = crypto.randomBytes(12), iterations = 1000000;
 const key = crypto.pbkdf2Sync(pass.normalize("NFKC"), salt, iterations, 32, "sha256");
 const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
 const ct = Buffer.concat([cipher.update(html, "utf8"), cipher.final(), cipher.getAuthTag()]);
