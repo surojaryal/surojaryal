@@ -108,7 +108,7 @@
         return `<a href="${href}" class="${active ? "active" : ""}">${esc(label)}${lock}</a>`;
       }).join("") + `</div>`).join("");
     $("#temp-pill").className = "pill " + (tempLive() ? "go" : "off");
-    $("#temp-pill").textContent = tempLive() ? "Temporary staffing: GO" : "Temporary staffing: OFF";
+    $("#temp-pill").innerHTML = `<span class="pl-long">Temporary staffing</span><span class="pl-short">Temp</span>: ${tempLive() ? "GO" : "OFF"}`;
   }
   function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 3500); }
   function badge(v) {
