@@ -1,6 +1,6 @@
 const { P, H1, H2, bullets, numbered, table, form, box, titleBlock, build, clauses, sign, DRAFT_LEGAL } = require("./lib");
-const S = "Sales | Version 1.0 | September 2026";
-const T = "NOT FOR USE until the Go Live Gate is signed | Draft for solicitor review | Version 1.0";
+const S = "Sales | Version 1.1 | September 2026";
+const T = "NOT FOR USE until the Go Live Gate is signed | Draft for solicitor review | Version 1.1";
 const HOLD = ["**Do not use yet.** Temporary staffing stays off until every item in the Go Live Gate is evidenced and the Director has signed it.", "This is a draft for review by a qualified solicitor and your payroll adviser. It is not legal advice."];
 
 module.exports = (root) => [
@@ -51,9 +51,9 @@ build(`${root}/5 Sales/Fee Proposal Letter.docx`, [
   P("**Proposal: recruitment of [Job title] for [Service]**"),
   P("Thank you for your time on [date]. As agreed, here is how we will help, and our fee."),
   H2("What we will do"),
-  ...bullets(["Search our network, adverts and referrals for suitable candidates in [area].", "Screen each candidate on experience, values, safeguarding practice and the essentials you told us.", "Carry out the checks required for roles working with vulnerable people, and tell you clearly what we have and have not verified.", "Send only candidates who have agreed to be introduced for this role.", "Support interviews and the offer, and check in at weeks 1, 4 and 12 after the start."]),
+  ...bullets(["Search our network, adverts and referrals for suitable candidates in [area].", "Screen each candidate on experience, values, safeguarding practice and the essentials you told us.", "Carry out the checks required for roles working with vulnerable people, and tell you clearly what we have and have not verified.", "Send only candidates who have agreed to be introduced for this role.", "Support interviews and the offer, and check in at days 7, 30, 60 and 90 after the start."]),
   H2("Fee"),
-  ...table(["Item", "Detail"], [["Fee", "[15% / 17.5%] of first-year basic salary plus guaranteed payments, plus VAT if applicable"], ["Example", "At £[salary], the fee would be £[amount] plus VAT"], ["When payable", "Only if you employ a candidate we introduced. Invoiced on the start date, payable within 14 days."], ["If they leave early", "Partial refund or free replacement within 12 weeks, as set out in our terms"]], [2, 5]),
+  ...table(["Item", "Detail"], [["Fee", "[12.5% / 15% / 17.5% / 20% / 22.5%, by role band] of first-year basic salary plus guaranteed payments, plus VAT if applicable"], ["Example", "At £[salary], the fee would be £[amount] plus VAT"], ["When payable", "Only if you employ a candidate we introduced. Invoiced on the start date, payable within 14 days."], ["If they leave early", "Free replacement in days 0 to 30; 50% credit in days 31 to 60; 25% credit in days 61 to 90, as set out in our terms"]], [2, 5]),
   H2("Next steps"),
   ...numbered(["Sign and return the enclosed Client Terms Of Business.", "Complete the Client Vacancy Brief, or I can complete it with you by phone.", "We will send the first profiles within [X] working days of receiving both."], "numbers2"),
   P("Kind regards,"),
@@ -105,7 +105,9 @@ build(`${root}/6 Temporary Staffing Drafts/Client Terms For Temporary Supply.doc
     ["1.2", "Before we supply anyone, you must give us the information required by the Conduct Regulations (regulation 18), including your identity, the role, location, hours, start date and duration, experience and qualifications needed, and any health and safety risks and how they are controlled."],
     ["2", "Charges"],
     ["2.1", "You pay our agreed hourly charge rate for hours on approved timesheets, plus VAT. Charge rates reflect pay, holiday pay, employer National Insurance, pension, insurance, compliance and our margin, and may change if statutory pay or costs change."],
-    ["2.2", "Timesheets must be approved within [48 hours]. Invoices are issued [weekly] and payable within [14] days. We may stop supply if invoices are overdue or your credit limit is reached."],
+    ["2.2", "Timesheets must be approved within [48 hours] of the end of each week. We invoice **weekly** and invoices are payable within **7 days**. We will not supply any shift while an invoice is overdue or your credit limit is reached."],
+    ["2.3", "Night, weekend and bank holiday shifts are charged at the separate rates in the rate schedule. Mileage between community visits is charged at [45p] a mile where agreed in the booking. [confirm]"],
+    ["2.4", "We pay workers for work done even if you have not yet paid us. Late payment interest applies under the Late Payment of Commercial Debts (Interest) Act 1998."],
     ["3", "Agency Workers Regulations"],
     ["3.1", "You must give workers day-one access to facilities and vacancies, and give us comparator pay and conditions information by week 10 of an assignment so we can provide equal treatment from week 12."],
     ["4", "If you want to hire a worker directly (transfer fee)"],
@@ -151,5 +153,5 @@ build(`${root}/6 Temporary Staffing Drafts/Go Live Checklist.docx`, [
     ["**Director final GO decision**", "", "", ""]
   ], [5, 3, 1, 1]),
   P("Record the same sign-off in the Temp Go Live Gate page of the operations system.")
-], { footer: "Checklist | Version 1.0 | September 2026" })
+], { footer: "Checklist | Version 1.1 | September 2026" })
 ];

@@ -97,7 +97,7 @@ function titleBlock(title, subtitle, meta) {
 }
 
 function build(file, children, opts = {}) {
-  const status = opts.status || "Version 1.0 | September 2026";
+  const status = opts.status || "Version 1.1 | September 2026";
   const doc = new Document({
     creator: "Haverton Care Limited", title: opts.title || path.basename(file, ".docx"),
     styles: {

@@ -256,6 +256,20 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
 .nav-account .link { color: var(--gold-2); font-size: .78rem; white-space: nowrap; }
 .nav-acts { display: flex; gap: .7rem; flex: none; }
 
+/* ---------- Action plan ---------- */
+.acts { list-style: none; padding: 0; margin: 0; }
+.act { display: grid; grid-template-columns: auto 1fr auto; gap: .8rem; align-items: start; padding: .65rem .4rem; border-bottom: 1px solid var(--line); margin: 0; }
+.act:last-child { border-bottom: 0; }
+.act-tick input { width: 20px; height: 20px; margin-top: .15rem; accent-color: var(--navy); cursor: pointer; }
+.act-main a { color: var(--navy); font-weight: 600; text-decoration: none; }
+.act-main a:hover { text-decoration: underline; }
+.act-meta { display: block; font-size: .8rem; color: var(--ink-2); margin-top: .15rem; }
+.act.done .act-main a { color: var(--ink-2); text-decoration: line-through; font-weight: 500; }
+.act.over { background: var(--r-bg); border-radius: 8px; }
+.act.over .act-meta strong { color: var(--r); }
+.progress.big { height: 12px; margin: 0 0 1.1rem; }
+button.tab { font: inherit; cursor: pointer; }
+
 /* ---------- CRM: records, timeline, pipeline, search, reports ---------- */
 a.rid { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .82rem; color: var(--gold-ink); text-decoration: none; background: rgba(201, 165, 92, .12); padding: .1em .4em; border-radius: 4px; }
 a.rid:hover { background: rgba(201, 165, 92, .25); }

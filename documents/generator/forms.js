@@ -1,5 +1,5 @@
 const { P, H1, H2, bullets, table, form, box, titleBlock, build } = require("./lib");
-const F = "Form | Version 1.0 | September 2026";
+const F = "Form | Version 1.1 | September 2026";
 const tick = opts => opts.map(o => "☐ " + o).join("    ");
 
 module.exports = (root) => [
@@ -85,14 +85,15 @@ build(`${root}/4 Forms/Reference Request.docx`, [
 ], { footer: F }),
 
 build(`${root}/4 Forms/Placement Check In Record.docx`, [
-  ...titleBlock("Placement Check In Record", "Week 1, week 4 and week 12 calls with the candidate and the client"),
+  ...titleBlock("Placement Check In Record", "Day 7, day 30, day 60 and day 90 calls with the candidate and the client"),
   ...form(["Candidate", "Client and role", "Start date", "Placement ID"]),
   ...table(["Check in", "Candidate says", "Client says", "Action and date"], [
-    ["Week 1 (induction, first shifts, anything worrying?)", "", "", ""],
-    ["Week 4 (settling in, training, team fit)", "", "", ""],
-    ["Week 12 (staying? any issues? referral ask)", "", "", ""]
+    ["Day 7 (induction, first shifts, anything worrying?)", "", "", ""],
+    ["Day 30 (settling in, training, team fit)", "", "", ""],
+    ["Day 60 (confidence, supervision, any concerns)", "", "", ""],
+    ["Day 90 (staying? end of guarantee; referral ask)", "", "", ""]
   ], [2, 3, 3, 2]),
-  ...form([["Still in post at 12 weeks?", "☐ Yes   ☐ No"], "If no: reason (for learning, not blame)", ["Referral asked?", "☐ Yes"], ["Testimonial asked, with written consent to use it?", "☐ Yes"]]),
+  ...form([["Still in post at 90 days?", "☐ Yes   ☐ No"], "If no: reason (for learning, not blame)", ["Referral asked?", "☐ Yes"], ["Testimonial asked, with written consent to use it?", "☐ Yes"]]),
   ...box("If a safety concern comes up", "Record the facts, act at once, tell the Director, and make sure the client’s safeguarding process is followed. Never promise to keep a safeguarding concern secret.")
 ], { footer: F })
 ];

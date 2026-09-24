@@ -7,13 +7,27 @@ build(`${root}/1 Start Here/Read Me First.docx`, [
   ]),
   H1("What is in this pack"),
   ...table(["Folder", "Files", "Use it for"], [
-    ["1 Start Here", "Read Me First, Launch Checklist", "Knowing what to do, in order"],
+    ["1 Start Here", "Read Me First, Action Plan, Action Plan Tracker (spreadsheet), Launch Checklist", "Knowing what to do, in order, and ticking it off"],
     ["2 Business Plan", "Haverton Recruitment Business Plan, Haverton Recruitment Forecast (spreadsheet)", "Strategy, targets, money, risks; showing banks, funders or partners"],
-    ["3 Legal", "Client Terms Of Business, Candidate Terms, Recruitment Privacy Notice, Data Protection Record", "The documents the law requires before you place anyone. **Have a solicitor review the first three.**"],
-    ["4 Forms", "Candidate Registration Form, Consent To Represent, Client Vacancy Brief, Interview Scoring Sheet, Reference Request, Placement Check In Record", "Everyday recruitment work"],
+    ["3 Legal", "Client Terms Of Business, Candidate Terms, Recruitment Privacy Notice, Data Protection Record, Insurance Broker Brief", "The documents the law requires before you place anyone. **Have a solicitor review the first three.**"],
+    ["4 Forms", "Candidate File Checklist, Candidate Registration Form, Consent To Represent, Client Vacancy Brief, Interview Scoring Sheet, Reference Request, Placement Check In Record", "Everyday recruitment work"],
     ["5 Sales", "Client Emails And Call Script, Fee Proposal Letter", "Winning clients"],
     ["6 Temporary Staffing Drafts", "Temporary Worker Terms, Client Terms For Temporary Supply, Assignment Confirmation, Go Live Checklist", "Getting ready for temporary staffing. **Not for use** until the Go Live Gate is signed."]
   ], [2, 4, 4]),
+  H1("Track your progress in three ways"),
+  ...bullets([
+    "**Haverton Operations → Action Plan** (recommended): click **Load 30-day launch plan**, choose your start date, then tick each action as you finish it. Due dates, overdue alerts and your progress bar update automatically and sync to every device you sign in on.",
+    "**Action Plan.docx**: the same plan to print and tick by hand.",
+    "**Action Plan Tracker.xlsx**: the same plan as a spreadsheet with a status drop-down and automatic overdue flags."
+  ]),
+  H1("What changed in version 1.1"),
+  ...bullets([
+    "Fee bands: 12.5%, 15%, 17.5%, 20% (Registered Managers) and 22.5% (senior operations, quality and retained search).",
+    "Guarantee: free replacement in days 0 to 30; 50% credit in days 31 to 60; 25% credit in days 61 to 90.",
+    "Check-ins at days 7, 30, 60 and 90.",
+    "Temporary clients: weekly invoices on 7-day terms, separate night, weekend and bank holiday rates.",
+    "New: Action Plan, Insurance Broker Brief and Candidate File Checklist (no health questions before offer; no DBS certificate copies; bank details only for temporary workers)."
+  ]),
   H1("Start permanent recruitment: your first steps"),
   ...numbered([
     "Send the **Client Terms Of Business**, **Candidate Terms** and **Recruitment Privacy Notice** to a solicitor for review. Ask for a fixed fee.",
@@ -43,7 +57,7 @@ build(`${root}/1 Start Here/Read Me First.docx`, [
     ["[confirm]", "A point to check with a professional or an official source before relying on it."]
   ], [2, 5]),
   ...box("Important", "These documents are carefully prepared drafts in plain English. They are not legal, tax or financial advice. Have the legal documents reviewed by a solicitor, and the forecast and VAT points by your accountant, before relying on them.")
-], { footer: "Version 1.0 | September 2026" }),
+], { footer: "Version 1.1 | September 2026" }),
 
 build(`${root}/1 Start Here/Launch Checklist.docx`, [
   ...titleBlock("Launch Checklist", "Tick each item when it is done and evidenced"),
@@ -71,5 +85,5 @@ build(`${root}/1 Start Here/Launch Checklist.docx`, [
     ["Accountant: payroll, pension, holiday pay and 13-week cash-flow advice", "☐", ""], ["Insurance quotes: employment business and employers’ liability", "☐", ""],
     ["Solicitor review of temporary drafts", "☐", ""], ["Funding option agreed (for example invoice finance)", "☐", ""], ["Go Live Checklist fully signed", "☐", ""]
   ], [7, 1, 2])
-], { footer: "Checklist | Version 1.0 | September 2026" })
+], { footer: "Checklist | Version 1.1 | September 2026" })
 ];

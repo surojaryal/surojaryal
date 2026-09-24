@@ -1,7 +1,7 @@
 const L = require("./lib");
 const { P, H1, H2, H3, bullets, clauses, table, box, sign, titleBlock, build, DRAFT_LEGAL } = L;
 const CO = "Haverton Care Limited, a company registered in England and Wales with company number 17025493, whose registered office is at 128 City Road, London, EC1V 2NX, trading as Haverton Recruitment And Staffing";
-const LEGAL_FOOTER = "Draft for solicitor review | Version 1.0 | September 2026";
+const LEGAL_FOOTER = "Draft for solicitor review | Version 1.1 | September 2026";
 
 module.exports = (root) => [
 
@@ -10,7 +10,7 @@ build(`${root}/3 Legal/Client Terms Of Business.docx`, [
   ...titleBlock("Client Terms Of Business", "Permanent recruitment and retained search", [
     ["Who these terms are for", "Care providers and other organisations that ask us to find permanent staff"],
     ["Our role", "Employment agency (we introduce candidates; you employ them)"],
-    ["Version", "1.0, September 2026"]
+    ["Version", "1.1, September 2026"]
   ]),
   ...box("Before you use this document", DRAFT_LEGAL),
   H1("Terms at a glance"),
@@ -20,7 +20,7 @@ build(`${root}/3 Legal/Client Terms Of Business.docx`, [
     ["When you pay", "Only if you employ or engage someone we introduced, within 12 months of our introduction."],
     ["How much", "A percentage of the candidate’s first-year pay, set out in clause 5, plus VAT if it applies."],
     ["When the invoice is due", "Within 14 days of the date on our invoice. We invoice on the candidate’s start date."],
-    ["If the person leaves early", "If they leave within 12 weeks, you get a partial refund or a free replacement (clause 7)."],
+    ["If the person leaves early", "Within 90 days: a free replacement (days 0 to 30) or a credit against a future fee (days 31 to 90). See clause 7."],
     ["Candidates", "We never charge candidates a fee for finding them work. We only send identifiable details with their consent."],
     ["Your checks", "As the employer you remain responsible for right to work checks and your own final safer recruitment decisions."]
   ], [2, 5]),
@@ -72,10 +72,11 @@ build(`${root}/3 Legal/Client Terms Of Business.docx`, [
     ["5.2", "The Fee is a percentage of the Candidate’s Remuneration:"]
   ]),
   ...table(["Type of role", "Fee"], [
-    ["Care and support roles (for example Care Assistant, Support Worker)", "12.5% of Remuneration"],
-    ["Senior and coordinator roles (for example Senior Care Assistant, Team Leader, Care Coordinator, Field Care Supervisor)", "15% of Remuneration"],
-    ["Deputy Manager, Registered Manager, Home Manager, Quality and Compliance roles", "17.5% of Remuneration"],
-    ["Executive and specialist roles, and all Retained Search", "20% of Remuneration, or a fixed fee agreed in writing"]
+    ["Care Assistants, Support Workers and similar care roles", "12.5% of Remuneration"],
+    ["Senior Care Assistants and Team Leaders", "15% of Remuneration"],
+    ["Deputy Managers, Care Coordinators and Field Care Supervisors", "17.5% of Remuneration"],
+    ["Registered Managers, Home Managers and Clinical Leads", "20% of Remuneration"],
+    ["Senior operations, quality and compliance roles, and all Retained Search", "22.5% of Remuneration, or a fixed fee agreed in writing"]
   ], [4, 2]),
   ...clauses([
     ["5.3", "Where we agree a different fee in writing for a particular vacancy, that fee applies instead."],
@@ -93,20 +94,24 @@ build(`${root}/3 Legal/Client Terms Of Business.docx`, [
     ["6.4", "**Withdrawn offers.** If you withdraw an offer after the Candidate has accepted it, for any reason other than the Candidate failing your lawful pre-employment checks or giving false information, you must pay a cancellation charge of 25% of the Fee that would have been payable."]
   ]),
 
-  H1("7. If the Candidate leaves early"),
+  H1("7. If the Candidate leaves early (our guarantee)"),
   ...clauses([
-    ["7.1", "If the Candidate’s Engagement ends within **12 weeks** of the Start Date, we will, at your choice, either try to find a replacement Candidate without a further Fee, or give you a partial refund of the Fee paid, as follows:"]
+    ["7.1", "If the Candidate’s Engagement ends within **90 days** of the Start Date, we will give you the following:"]
   ]),
-  ...table(["Engagement ends", "Refund of Fee paid"], [
-    ["In weeks 1 to 4", "50%"], ["In weeks 5 to 8", "30%"], ["In weeks 9 to 12", "15%"], ["After week 12", "No refund"]
-  ], [3, 2]),
+  ...table(["Engagement ends", "What you receive"], [
+    ["Days 0 to 30", "A free replacement: we search again for the same role with no further Fee"],
+    ["Days 31 to 60", "A credit of 50% of the Fee paid, to use against a future Fee within 12 months"],
+    ["Days 61 to 90", "A credit of 25% of the Fee paid, to use against a future Fee within 12 months"],
+    ["After day 90", "No replacement or credit"]
+  ], [2, 5]),
   ...clauses([
-    ["7.2", "The refund or replacement only applies if all of these are true:"],
+    ["7.2", "The guarantee only applies if all of these are true:"],
     ["", "(a) you paid the Fee in full within 14 days of the invoice date;"],
-    ["", "(b) you tell us in writing within 7 days of the Engagement ending;"],
-    ["", "(c) the Engagement did not end because of redundancy, restructuring, a material change you made to the role, pay or location, or your breach of the Candidate’s contract; and"],
-    ["", "(d) you do not Engage the Candidate again within 12 months."],
-    ["7.3", "If you choose a replacement, you must give us the chance to fill the vacancy for 8 weeks. If we cannot, we will give the refund in clause 7.1 instead. Only one replacement is available for each placement."]
+    ["", "(b) you tell us in writing within 7 days of the Engagement ending, with the reason;"],
+    ["", "(c) the Engagement did not end because of redundancy, restructuring, a material change you made to the role, pay or location, your breach of the Candidate’s contract, or dismissal that was not fair and lawful;"],
+    ["", "(d) we managed the whole recruitment process for that Candidate; and"],
+    ["", "(e) you do not Engage the Candidate again within 12 months."],
+    ["7.3", "For a replacement, you must give us 8 weeks to fill the vacancy. Only one replacement or credit is available for each placement. Credits have no cash value and cannot be transferred."]
   ]),
 
   H1("8. Retained Search"),
@@ -161,7 +166,7 @@ build(`${root}/3 Legal/Candidate Terms.docx`, [
   ...titleBlock("Candidate Terms", "How we help you find work, and what we agree with each other", [
     ["Who these terms are for", "People who register with us to find permanent work"],
     ["Cost to you", "Nothing. We never charge candidates for finding work."],
-    ["Version", "1.0, September 2026"]
+    ["Version", "1.1, September 2026"]
   ]),
   ...box("Before you use this document", DRAFT_LEGAL),
   H1("1. Who we are"),
@@ -174,7 +179,7 @@ build(`${root}/3 Legal/Candidate Terms.docx`, [
     "Tell you about each role before we put you forward, including the organisation, location, hours and pay.",
     "Only send your CV or details to a client **after you have agreed**, for that specific role.",
     "Help arrange interviews, pass on feedback where the client gives it, and support you through any offer.",
-    "Keep in touch after you start, usually at week 1, week 4 and week 12."
+    "Keep in touch after you start, usually at day 7, day 30, day 60 and day 90."
   ]),
   H1("3. No fees"),
   P("We will **never** charge you a fee for finding you work or for putting you forward for roles. Our clients pay us if they employ you. If anyone asks you for money in our name, please tell us straight away."),
@@ -207,7 +212,7 @@ build(`${root}/3 Legal/Recruitment Privacy Notice.docx`, [
     ["Controller", "Haverton Care Limited (company number 17025493), 128 City Road, London, EC1V 2NX"],
     ["ICO registration number", "[confirm]"],
     ["Contact for privacy questions", "The Director, info@havertoncare.co.uk, 01322 879778"],
-    ["Version", "1.0, September 2026"]
+    ["Version", "1.1, September 2026"]
   ]),
   ...box("Before you use this document", DRAFT_LEGAL),
   H1("1. Who this notice is for"),
@@ -267,7 +272,7 @@ build(`${root}/3 Legal/Recruitment Privacy Notice.docx`, [
 /* ---------------------------------------------------------------- DATA PROTECTION RECORD */
 build(`${root}/3 Legal/Data Protection Record.docx`, [
   ...titleBlock("Data Protection Record", "Internal record of processing, retention, lawful bases and safeguards", [
-    ["Owner", "Director, Haverton Care Limited"], ["Review", "Every 12 months, or sooner if the service changes"], ["Version", "1.0, September 2026"]
+    ["Owner", "Director, Haverton Care Limited"], ["Review", "Every 12 months, or sooner if the service changes"], ["Version", "1.1, September 2026"]
   ]),
   ...box("Why this document exists", ["The UK GDPR expects us to be able to **show** how we comply (accountability). This record, kept up to date, is that evidence. It also includes the **Appropriate Policy Document** the Data Protection Act 2018 requires when we rely on Schedule 1 conditions for special category and criminal offence data.", "Draft for review by a solicitor or data protection adviser."]),
   H1("1. Record of processing"),
@@ -322,5 +327,5 @@ build(`${root}/3 Legal/Data Protection Record.docx`, [
     ["Accountant / payroll", "Accounts and invoicing", "UK", "[confirm]"],
     ["GitHub", "Hosts the encrypted website files only (no personal data)", "Global", "Not required for personal data"]
   ], [2, 3, 2, 3])
-], { footer: "Internal | Version 1.0 | September 2026" })
+], { footer: "Internal | Version 1.1 | September 2026" })
 ];

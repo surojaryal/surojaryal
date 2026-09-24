@@ -8,7 +8,7 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     ["Registered office", "128 City Road, London, EC1V 2NX"],
     ["Founder and Director", "Suroj Aryal"],
     ["Contact", "info@havertoncare.co.uk | 01322 879778 | havertoncare.co.uk"],
-    ["Version", "1.0, September 2026 (replaces earlier recruitment plans)"],
+    ["Version", "1.1, September 2026 (replaces earlier recruitment plans)"],
     ["Status", "Confidential business document"]
   ]),
   ...box("How to read this plan", [
@@ -27,6 +27,7 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
   H1("1. Summary"),
   P("**What we are.** A specialist recruitment agency for adult social care. We find care managers, senior carers and care staff for care homes, home care agencies and supported living services in Kent and South East London."),
   P("**Why we will win.** Most agencies can send a CV. Few understand what makes a Registered Manager succeed in a struggling service, how safeguarding culture or medication practice affects the right hire, or what evidence a provider needs for CQC. Our founder has around 15 years in adult social care, including as a CQC Registered Manager who achieved a Good rating. That experience is our advantage."),
+  ...box("Our statement", "Haverton Recruitment And Staffing provides permanent and, in time, temporary staff for care homes, home care and supported living providers. Led by an experienced former Registered Manager, we understand CQC expectations, safer recruitment, safeguarding, staffing pressures and person-centred care. We do not simply send CVs. We introduce carefully screened people who understand dignity, safety, accountability and quality care."),
   P("**How we will grow, safely.**"),
   ...numbered([
     "**Now:** permanent recruitment and retained search. Low cost, low risk, paid by the client on success.",
@@ -49,7 +50,8 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     ["What we are legally", "An **employment agency** for permanent introductions. Later, an **employment business** for temporary supply, only after the Go Live Gate."],
     ["Regulator", "The **Fair Work Agency** enforces the rules for agencies in Great Britain (from 7 April 2026). CQC does not regulate recruitment agencies."],
     ["Where we work", "Swanley, Dartford, Gravesham, Sevenoaks, Bexley, Bromley, Medway and South East London first, then wider Kent, London, Surrey, Essex and East Sussex."],
-    ["What we will not do", "Charge candidates fees. Give immigration advice. Promise visa sponsorship. Advertise jobs that do not exist. Guarantee CQC outcomes."],
+    ["What we will not do", "Charge candidates fees. Give immigration advice. Promise visa sponsorship. Recruit overseas in the first year (it needs the Code of Practice for international recruitment and ethical recruiter standards). Advertise jobs that do not exist. Guarantee CQC outcomes. Chase NHS framework work before we have a strong independent care track record."],
+    ["CQC boundary", "Supplying staff to registered providers does not make us a CQC provider. Supplying carers **directly to private individuals** in their homes could, so we supply only to registered providers unless we take advice. We never describe the recruitment business as CQC registered."],
     ["SIC codes", "Registered: 70229, 78200, 85590, 88100. **Add 78109** (employment placement agencies) at the next confirmation statement."]
   ], [2, 5]),
   H2("Mission"),
@@ -65,6 +67,7 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
 
   H1("3. The market"),
   P("**Fact:** adult social care in England has long-standing recruitment and retention pressure. Skills for Care publishes the official workforce figures each year in _The State of the Adult Social Care Sector and Workforce in England_. **[confirm the latest vacancy and turnover figures from that report before quoting them to clients or funders]**"),
+  P("**Local figures to verify:** an external research summary suggested Kent has around 917 regulated adult social care services, about 46,000 posts and about 2,700 vacancies, and that Bexley has around 106 services with a vacancy rate near 10.2%. **[verify each figure against Skills for Care local area data, with the date, before using it]**"),
   P("**What this means for providers:** unfilled manager and senior roles put care quality, CQC ratings and income at risk. Agency costs and poor hires are expensive. Providers need recruiters who can judge care competence, not just match keywords."),
   H2("Who we sell to"),
   ...table(["Tier", "Who", "Their problem", "How we sell"], [
@@ -78,7 +81,8 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     ["Highest", "Registered Manager, Home Manager, Deputy Manager, Operations Manager, Quality and Compliance roles"],
     ["High", "Care Coordinator, Field Care Supervisor, Team Leader, Senior Care Assistant"],
     ["Selective", "Care Assistants, Support Workers, Domiciliary and Live-in Care Workers"],
-    ["Later, with controls", "Temporary care staff; Registered Nurses only when registration and clinical governance checks are robust"]
+    ["Temporary, after go-live", "Lower-risk non-registered roles: Care Assistants, Senior Care Assistants, Support Workers, Healthcare Assistants, Night Care Staff, Activity Coordinators, Kitchen and Domestic Staff"],
+    ["Not at the start", "Registered Nurses, agency Clinical Leads, doctors and specialist clinicians, until compliance is audited and clinical advice is in place"]
   ], [2, 6]),
   H2("Competition"),
   P("We compete with national care staffing agencies, local care recruitment agencies in Kent and South East London, general recruitment agencies, job boards, and providers hiring directly. **[Complete a named local competitor table before launch: name, services, fees if public, reviews.]**"),
@@ -86,18 +90,20 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
 
   H1("4. Services and prices"),
   ...table(["Service", "What the client gets", "Price"], [
-    ["Permanent recruitment", "Vacancy briefing, search, screening, consented shortlist, interview and offer support, check-ins at weeks 1, 4 and 12", "12.5% to 17.5% of first-year salary by role band"],
-    ["Retained search", "A dedicated search for senior or hard roles, with milestones and exclusivity", "20% or a fixed fee, paid in thirds"],
+    ["Permanent recruitment", "Vacancy briefing, search, screening, consented shortlist, interview and offer support, check-ins at days 7, 30, 60 and 90", "12.5% to 20% of first-year salary by role band"],
+    ["Retained search", "A dedicated search for senior or hard roles, with milestones and exclusivity", "22.5% or a fixed fee, paid in thirds"],
     ["Recruitment compliance support (via Haverton Care Hub)", "Recruitment file audits, safer recruitment process design, interview packs, onboarding controls", "Fixed project fee, around £1,500 [confirm per scope]"],
-    ["Temporary staffing (later)", "Checked care staff for shifts and cover", "Charge rate built up from full cost, never below £5.50 gross profit per hour or 20% margin"]
+    ["Temporary staffing (later)", "Checked care staff for shifts and cover; weekly timesheets and invoices, 7-day payment", "Charge rate built up from full cost (pay, holiday, NI, pension, payroll, checks, insurance, margin), with separate night, weekend and bank holiday rates; never below £5.50 gross profit per hour or 20% margin"]
   ], [2, 4, 3]),
-  ...table(["Role band", "Fee", "Example: £30,000 salary", "Example: £45,000 salary"], [
-    ["Care and support", "12.5%", gbp(3750), "—"],
-    ["Senior and coordinator", "15%", gbp(4500), "—"],
-    ["Deputy, Registered Manager, Quality", "17.5%", "—", gbp(7875)],
-    ["Executive, retained", "20%", "—", gbp(9000)]
-  ], [3, 1, 2, 2]),
-  P("Fees exclude VAT. Early-leaver refunds apply for 12 weeks (see Client Terms Of Business)."),
+  ...table(["Role band", "Fee", "Example salary", "Example fee"], [
+    ["Care Assistants and Support Workers", "12.5%", gbp(25000), gbp(3125)],
+    ["Senior Carers and Team Leaders", "15%", gbp(28000), gbp(4200)],
+    ["Deputy Managers and Care Coordinators", "17.5%", gbp(35000), gbp(6125)],
+    ["Registered Managers and Clinical Leads", "20%", gbp(45000), gbp(9000)],
+    ["Senior operations and quality roles; retained search", "22.5%", gbp(55000), gbp(12375)]
+  ], [4, 1, 2, 2]),
+  P("Fees exclude VAT. Example salaries are illustrations, not market data."),
+  P("**Guarantee:** days 0 to 30 free replacement; days 31 to 60 a 50% credit; days 61 to 90 a 25% credit. Only if the invoice was paid on time, the leaver was not made redundant or dismissed unfairly, and we ran the whole process."),
 
   H1("5. How we win clients"),
   H2("Weekly founder routine"),
@@ -109,6 +115,15 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     ["Candidate-led introductions", "Up to 2", "Candidate consent; no identity shared until agreed"],
     ["Useful LinkedIn posts", "1 to 2", "Practical insight, never scare tactics about CQC"]
   ], [3, 2, 4]),
+  H2("Our service standards"),
+  ...bullets([
+    "Reply to client calls within 30 minutes during working hours.",
+    "A credible shortlist within 24 to 48 hours where the market allows, never padded with weak CVs.",
+    "Interview every candidate properly, and never send a CV without the candidate’s permission.",
+    "Never send an unverified worker into a setting with vulnerable people.",
+    "Check in after every first temporary shift, and at days 7, 30, 60 and 90 for permanent placements.",
+    "Record why people leave, and give honest market advice, including when a client’s pay rate is too low."
+  ]),
   H2("Free channels first"),
   ...bullets([
     "**LinkedIn:** founder profile and posts; one free job post at a time.",
@@ -136,7 +151,7 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     "Get **written consent** before sending a CV to any client, for that role.",
     "Carry out checks that match the role. For work with vulnerable people, seek two non-family references and copies of qualifications (Conduct Regulations, regulation 22).",
     "Match to a real vacancy, prepare the candidate honestly, and manage the offer.",
-    "Check in at week 1, week 4 and week 12, and record why anyone leaves early."
+    "Check in at days 7, 30, 60 and 90, and record why anyone leaves early."
   ], "numbers2"),
   P("Interviews test judgement, not memorised jargon: safeguarding, dignity, boundaries, record keeping, escalation, teamwork and learning from mistakes. For managers we add governance, staffing, complaints, medication and clinical risk, culture and leadership."),
 
@@ -152,6 +167,15 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     ["Safeguarding", "Good practice and client expectation", "Escalate concerns promptly; never hide incidents"],
     ["Insurance", "Legal (EL once we employ) and commercial need (PI)", "Professional indemnity for recruitment; employers’ liability when we employ staff or temporary workers"]
   ], [3, 2, 5]),
+  H2("Insurance we need"),
+  ...table(["Cover", "Suggested level", "When", "Why"], [
+    ["Professional indemnity", "£1m to £2m", "Before the first placement", "Claims about negligent recruitment, checks or advice"],
+    ["Employers’ liability", "At least £5m by law; £10m is common", "As soon as we employ anyone, including temporary workers", "Legal requirement; fines for not holding it"],
+    ["Public liability", "£5m to £10m", "Before temporary supply (often required by clients)", "Third-party injury or damage"],
+    ["Cyber and data", "£250,000 to £500,000", "Recommended", "Data breach and cyber attack costs"],
+    ["Directors and officers, legal expenses, crime", "As advised", "Optional", "Director protection, disputes, fraud"]
+  ], [3, 3, 3, 4]),
+  P("Use a broker who covers **healthcare staffing**, not general office insurance. See the Insurance Broker Brief in the Legal folder. Suggested levels come from market practice and must be confirmed by the broker."),
   ...box("Temporary staffing is off until every one of these is proven", [
     "Solicitor-reviewed temporary worker and client terms; Key Information Document process; employment business insurance; tested payroll with pension and holiday pay; right to work process; Agency Workers Regulations tracker; credit checks and limits; a 13-week cash-flow forecast with funding; out-of-hours and incident process; data controls; a small pilot with an audit afterwards.",
     "The Director signs the Go Live Gate in the operations system. \"In progress\" is not a pass."
@@ -238,6 +262,13 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     ["Days 31 to 60", "First placements, track conversion, refine pitch and pricing, file audit", "First fee earned and clean audit"],
     ["Days 61 to 90", "Repeat clients, management report, decide on recruiter capacity, start temporary readiness project (not switched on)", "A repeat client and a stable pipeline"]
   ], [2, 6, 3]),
+  H2("First 30 days: activity targets"),
+  ...table(["Target", "Goal"], [
+    ["Local providers in the CRM", "150"], ["Decision-makers mapped", "250"], ["Candidate conversations", "100"], ["Candidate interviews", "40"],
+    ["Temporary candidates pre-screened (not supplied)", "20 to 30"], ["Client calls", "100"], ["Client meetings", "10"], ["Signed client terms", "3 to 5"],
+    ["Live permanent roles", "3 to 8"], ["First permanent placement", "1"], ["Temporary pilot", "Not in the first 30 days; only after the Go Live Gate"]
+  ], [4, 3]),
+  P("Track these in the Action Plan and Reports pages of Haverton Operations."),
   H2("Twelve-month milestones"),
   ...table(["Month", "Business goal", "Operations goal"], [
     ["1 to 3", "First vacancies and placements", "Terms, insurance, privacy, CRM, first audit"],
@@ -273,4 +304,4 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     ["Care workforce data", "skillsforcare.org.uk: State of the Adult Social Care Sector and Workforce in England"]
   ], [3, 5]),
   P("_Checked against the Haverton Recruitment Master Operating System v2.0 (21 September 2026). Review this plan every quarter._")
-], { title: "Haverton Recruitment Business Plan", footer: "Confidential | Version 1.0 | September 2026" })];
+], { title: "Haverton Recruitment Business Plan", footer: "Confidential | Version 1.1 | September 2026" })];

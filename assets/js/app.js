@@ -266,8 +266,8 @@
 
   /* ---------------- UI chrome ---------------- */
   const NAV = [
-    ["Overview", [["#/", "Dashboard"], ["#/pipeline", "Pipeline Board"], ["#/reports", "Reports"], ["#/golive", "Temp Go Live Gate"], ["#/controls", "Controls And Authority"]]],
-    ["Registers", HAV.registers.map(r => ["#/r/" + r.key, r.title, r.temp])],
+    ["Overview", [["#/", "Dashboard"], ["#/actions", "Action Plan"], ["#/pipeline", "Pipeline Board"], ["#/reports", "Reports"], ["#/golive", "Temp Go Live Gate"], ["#/controls", "Controls And Authority"]]],
+    ["Registers", HAV.registers.filter(r => r.nav !== false).map(r => ["#/r/" + r.key, r.title, r.temp])],
     ["Operating System", [["#/procedures", "Procedures (SOPs)"], ["#/strategy", "Strategy And Services"], ["#/sales", "Sales And Candidates"], ["#/kpis", "KPIs And Governance"], ["#/risks", "Risk Register"], ["#/plan", "90 Day And 12 Month Plan"]]],
     ["Finance", [["#/finance", "Financial Model"], ["#/calculators", "Pricing Calculators"]]],
     ["Reference", [["#/sources", "Legal And Source Register"], ["#/data", "Data, Backup And Privacy"]]]
@@ -301,9 +301,9 @@
   function badge(v) {
     if (!v) return "";
     const map = {
-      green: ["Green", "Yes", "Active Client", "Expansion", "Verified", "Clear", "Update Service Verified", "Two Complete", "Complete", "Placed", "Completed", "Filled", "Paid", "Within Terms", "GO", "Closed", "Started", "Live", "Low"],
+      green: ["Done", "Green", "Yes", "Active Client", "Expansion", "Verified", "Clear", "Update Service Verified", "Two Complete", "Complete", "Placed", "Completed", "Filled", "Paid", "Within Terms", "GO", "Closed", "Started", "Live", "Low"],
       amber: ["Amber", "Pending", "Requested", "One Complete", "Qualified", "Terms Sent", "Prospect", "Screening", "Due Soon", "In Progress", "On Hold", "Interview", "Offer", "Offered", "Submitted", "Planned", "Guarantee Period", "Overdue", "Medium", "Low-Med", "CONDITIONAL", "Content Reviewed", "Equal Treatment Due", "Open"],
-      red: ["Red", "No", "Expired", "Issue", "Do Not Supply", "Do Not Contact", "Rejected", "Withdrawn", "Cancelled", "Stop Supply", "High", "Critical", "Early Leaver", "RESTRICTED"]
+      red: ["Blocked", "Red", "No", "Expired", "Issue", "Do Not Supply", "Do Not Contact", "Rejected", "Withdrawn", "Cancelled", "Stop Supply", "High", "Critical", "Early Leaver", "RESTRICTED"]
     };
     const cls = map.green.includes(v) ? "g" : map.red.includes(v) ? "r" : map.amber.includes(v) ? "a" : "n";
     return `<span class="badge ${cls}">${esc(v)}</span>`;
@@ -332,7 +332,9 @@
       ["Open follow ups", count("followups", r => r["Status"] !== "Closed"), "#/r/followups"],
       ["Outstanding invoices", gbp.format(outstanding), "#/r/invoices"],
       ["Overdue over 14 days", overdue14.length, "#/r/invoices", overdue14.length ? "red" : ""],
-      ["Open complaints / incidents", count("cases", r => r["Status"] !== "Closed"), "#/r/cases"]
+      ["Open complaints / incidents", count("cases", r => r["Status"] !== "Closed"), "#/r/cases"],
+      ["Actions done", R.actions.filter(r => r["Status"] === "Done").length + " / " + R.actions.filter(r => r["Status"] !== "Not needed").length, "#/actions"],
+      ["Actions overdue", R.actions.filter(r => actOpen(r) && r["Due Date"] && r["Due Date"] < t).length, "#/actions", R.actions.some(r => actOpen(r) && r["Due Date"] && r["Due Date"] < t) ? "red" : ""]
     ];
 
     const alerts = [];
@@ -343,13 +345,14 @@
     R.awr.filter(r => { const w = addDays(r["Qualifying Start"], 84); return w && w <= in14 && r["Equal Treatment Review"] !== "Completed"; }).forEach(r => alerts.push(["r", `AWR week 12 due: ${r["Worker ID"]} at ${r["Client ID"]}`, "#/r/awr", addDays(r["Qualifying Start"], 84)]));
     R.awr.filter(r => { const w = addDays(r["Qualifying Start"], 70); return w && w <= t && r["Comparator Information Requested"] !== "Yes"; }).forEach(r => alerts.push(["a", `AWR week 10: request comparator information for ${r["Worker ID"]}`, "#/r/awr", ""]));
     R.placements.filter(r => r["Start Date"] && r["Status"] !== "Cancelled").forEach(r => {
-      [[7, "week 1"], [28, "week 4"], [84, "week 12"]].forEach(([d, l]) => { const due = addDays(r["Start Date"], d); if (due >= addDays(t, -3) && due <= addDays(t, 7)) alerts.push(["a", `Placement ${l} check in: ${r["Job Title"]} (${r.id})`, `#/view/placements/${encodeURIComponent(r.id)}`, due]); });
+      [[7, "day 7"], [30, "day 30"], [60, "day 60"], [90, "day 90"]].forEach(([d, l]) => { const due = addDays(r["Start Date"], d); if (due >= addDays(t, -3) && due <= addDays(t, 7)) alerts.push(["a", `Placement ${l} check in: ${r["Job Title"]} (${r.id})`, `#/view/placements/${encodeURIComponent(r.id)}`, due]); });
     });
     R.cases.filter(r => r["Status"] !== "Closed" && ["High", "Critical"].includes(r["Immediate Risk"])).forEach(r => alerts.push(["r", `${r["Immediate Risk"]} risk case open: ${r.id} (${r["Type"]})`, `#/view/cases/${encodeURIComponent(r.id)}`, r["Target Date"]]));
     R.cases.filter(r => r["Status"] !== "Closed" && r["Target Date"] && r["Target Date"] < t).forEach(r => alerts.push(["r", `Case past target date: ${r.id}`, "#/r/cases", r["Target Date"]]));
     R.audits.filter(r => r["Critical Failure"] === "Yes" && r["Status"] !== "Closed").forEach(r => alerts.push(["r", `Unresolved critical audit failure: ${r["Audit Area"]} (${r.id})`, "#/r/audits", r["Due Date"]]));
     overdue14.forEach(r => alerts.push(["r", `Invoice ${r.id} is ${daysOverdue(r)} days overdue (${r["Client ID"]})`, `#/view/invoices/${encodeURIComponent(r.id)}`, r["Due Date"]]));
     R.clients.filter(r => r["Last Review"] && r["Last Review"] < addDays(t, -365) && ["Active Client", "Expansion"].includes(r["Client Status"])).forEach(r => alerts.push(["a", `Annual client file review due: ${r["Legal Entity"]}`, `#/view/clients/${encodeURIComponent(r.id)}`, ""]));
+    R.actions.filter(r => actOpen(r) && r["Due Date"] && r["Due Date"] <= addDays(t, 2)).forEach(r => alerts.push([r["Due Date"] < t ? "r" : "a", `${r["Due Date"] < t ? "Action overdue" : "Action due"}: ${r["Task"]}`, "#/actions", r["Due Date"]]));
     /* Operating standard: every active sales or candidate record has an owner and a next action */
     const openFu = new Set(R.followups.filter(f => f["Status"] !== "Closed").map(f => f["Related ID"]));
     R.clients.filter(r => ["Lead", "Prospect", "Qualified", "Terms Sent", "Active Client", "Expansion"].includes(r["Client Status"]) && !openFu.has(r.id)).forEach(r => alerts.push(["a", `No next action: ${r["Legal Entity"] || r.id}`, `#/view/clients/${encodeURIComponent(r.id)}`, ""]));
@@ -698,6 +701,80 @@
     logChange(b.key, id, "updated", [b.field]); save(); route(); toast(`${id} moved to ${col}`);
   }
 
+  /* ---------------- action plan ---------------- */
+  const actOpen = r => !["Done", "Not needed"].includes(r["Status"]);
+  function pageActions() {
+    const rows = state.records.actions, t = iso(today());
+    const total = rows.filter(r => r["Status"] !== "Not needed").length, done = rows.filter(r => r["Status"] === "Done").length;
+    const overdue = rows.filter(r => actOpen(r) && r["Due Date"] && r["Due Date"] < t).length;
+    const dueWeek = rows.filter(r => actOpen(r) && r["Due Date"] && r["Due Date"] >= t && r["Due Date"] <= addDays(t, 7)).length;
+    const f = actions_filter;
+    const phases = HAV.lists.actionPhase.filter(ph => rows.some(r => r["Phase"] === ph)).concat(rows.some(r => !HAV.lists.actionPhase.includes(r["Phase"])) ? ["Other"] : []);
+    const show = r => f === "all" || (f === "open" && actOpen(r)) || (f === "overdue" && actOpen(r) && r["Due Date"] && r["Due Date"] < t) || (f === "done" && r["Status"] === "Done");
+    const row = r => {
+      const over = actOpen(r) && r["Due Date"] && r["Due Date"] < t;
+      return `<li class="act ${r["Status"] === "Done" ? "done" : ""} ${over ? "over" : ""}">
+        <label class="act-tick" title="Mark as done"><input type="checkbox" data-act="${esc(r.id)}" ${r["Status"] === "Done" ? "checked" : ""} aria-label="Done: ${esc(r["Task"])}"></label>
+        <div class="act-main"><a href="#/view/actions/${encodeURIComponent(r.id)}">${esc(r["Task"])}</a>
+          <span class="act-meta">${r["Deliverable"] ? esc(r["Deliverable"]) + " · " : ""}${r["Owner"] ? esc(r["Owner"]) + " · " : ""}${r["Status"] === "Done" ? "Done " + fmtDate(r["Done Date"]) : r["Due Date"] ? (over ? "<strong>Overdue</strong> · due " : "Due ") + fmtDate(r["Due Date"]) : "No due date"}${r["Evidence / Notes"] ? " · evidence recorded" : ""}</span></div>
+        <span class="act-status">${badge(r["Status"])}</span></li>`;
+    };
+    const groups = phases.map(ph => {
+      const items = rows.filter(r => (ph === "Other" ? !HAV.lists.actionPhase.includes(r["Phase"]) : r["Phase"] === ph)).sort((a, b) => String(a["Due Date"] || "9").localeCompare(String(b["Due Date"] || "9")));
+      const vis = items.filter(show); if (!vis.length) return "";
+      const d = items.filter(r => r["Status"] === "Done").length;
+      return `<section class="card"><h2>${esc(ph)} <span class="count">${d} of ${items.length} done</span></h2><ul class="acts">${vis.map(row).join("")}</ul></section>`;
+    }).join("");
+    return header("Action Plan", "Tick each action when it is done. Open an action to record the date, owner and where the evidence is kept. Overdue actions also appear on the dashboard.") +
+      `<section class="tiles mini">
+        <div class="tile"><span class="tile-v">${done} / ${total}</span><span class="tile-l">Actions done</span></div>
+        <div class="tile ${overdue ? "red" : ""}"><span class="tile-v">${overdue}</span><span class="tile-l">Overdue</span></div>
+        <div class="tile"><span class="tile-v">${dueWeek}</span><span class="tile-l">Due in the next 7 days</span></div>
+      </section>
+      <div class="progress big"><div style="width:${total ? Math.round(done / total * 100) : 0}%"></div></div>
+      <div class="toolbar">
+        <nav class="tabs">${[["open", "Open"], ["overdue", "Overdue"], ["done", "Done"], ["all", "All"]].map(([k, l]) => `<button type="button" class="tab ${f === k ? "on" : ""}" data-af="${k}">${l}</button>`).join("")}</nav>
+        <span class="spacer"></span>
+        <a class="btn ghost" href="#/r/actions">Table view and CSV</a>
+        <button class="btn ghost" id="seed">Load 30-day launch plan</button>
+        <button class="btn" id="addact">Add action</button>
+      </div>
+      ${rows.length ? (groups || `<div class="empty">Nothing to show for this filter.</div>`) : `<div class="empty">No actions yet. Click <strong>Load 30-day launch plan</strong> to add the ${HAV.actionPlan.length} launch actions with due dates, or add your own.</div>`}`;
+  }
+  let actions_filter = "open";
+  function seedActions() {
+    const dlg = $("#dlg");
+    dlg.innerHTML = `<form method="dialog" id="seed-form">
+      <div class="dlg-head"><h2>Load 30-day launch plan</h2><button type="button" class="x" data-close aria-label="Close">×</button></div>
+      <div class="dlg-body"><p>This adds ${HAV.actionPlan.length} actions: 30 launch days plus the temporary staffing readiness steps. Due dates count from the start date you choose. Actions already in your plan with the same name are skipped.</p>
+      <div class="form-grid"><label class="fld"><span>Start date (day 1)</span><input type="date" name="start" value="${iso(today())}" required></label>
+      <label class="fld"><span>Owner</span><input name="owner" value="${esc(state.lastBy || "Suroj Aryal")}"></label></div></div>
+      <div class="dlg-foot"><span class="spacer"></span><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn">Add actions</button></div></form>`;
+    const form = $("#seed-form");
+    form.addEventListener("submit", e => {
+      e.preventDefault(); if (!form.reportValidity()) return;
+      const start = form.start.value, owner = form.owner.value.trim();
+      const have = new Set(state.records.actions.map(r => String(r["Task"]).toLowerCase()));
+      let n = 0;
+      HAV.actionPlan.forEach(([day, phase, task, deliverable]) => {
+        if (have.has(task.toLowerCase())) return;
+        const id = newId("actions");
+        state.records.actions.push({ id, created: new Date().toISOString(), "Task": task, "Phase": phase, "Deliverable": deliverable, "Due Date": addDays(start, day - 1), "Owner": owner, "Status": "Not started" });
+        logChange("actions", id, "created"); n++;
+      });
+      save(); dlg.close(); route(); toast(n ? `${n} actions added` : "All launch actions are already in your plan");
+    });
+    dlg.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => dlg.close()));
+    dlg.showModal();
+  }
+  function tickAction(id, on) {
+    const r = findRec("actions", id); if (!r) return;
+    if (on) { r["Status"] = "Done"; r["Done Date"] = r["Done Date"] || iso(today()); }
+    else { r["Status"] = "In progress"; r["Done Date"] = ""; }
+    r.modified = new Date().toISOString(); logChange("actions", id, "updated", ["Status", "Done Date"]); save(); route();
+    toast(on ? "Marked as done. Open it to add evidence." : "Marked as not done");
+  }
+
   /* ---------------- search ---------------- */
   function pageSearch(q) {
     q = (q || "").trim();
@@ -923,7 +1000,7 @@
       <div class="grid2"><section class="card"><h2>Discovery Framework</h2><ol class="steps">${S.discovery.map(p => `<li>${esc(p)}</li>`).join("")}</ol></section>
       <section class="card"><h2>Weekly Outbound Rhythm</h2>${table(["Activity", "Target", "Quality standard"], plain(S.outbound), "compact")}
       ${callout("Sales principle", "Never solve a cash-flow problem by selling to a weak-credit client. Revenue from an invoice that is not collected is not growth.", "warn")}
-      <h3>Account management</h3><p>After every start, check in with candidate and client at week 1, week 4 and week 12. For temporary clients, run a monthly account review covering fill rate, cancellations, timesheet accuracy, worker feedback, incidents, AWR, invoice ageing and forecast demand.</p></section></div>
+      <h3>Account management</h3><p>After every start, check in with candidate and client at day 7, day 30, day 60 and day 90. For temporary clients, run a monthly account review covering fill rate, cancellations, timesheet accuracy, worker feedback, incidents, AWR, invoice ageing and forecast demand.</p></section></div>
       <section class="card"><h2>Candidate Journey</h2><ol class="steps">${S.journey.map(p => `<li>${esc(p)}</li>`).join("")}</ol>
       <h3>Values-based screening</h3><p>Interviews test judgement, not memorised care jargon. Use consistent evidence-based questions on safeguarding, dignity, boundaries, documentation, escalation, teamwork, learning from mistakes and person-centred decision-making, scored against defined behavioural indicators. For managers, add governance, staffing, complaints, medication / clinical risk where relevant, culture, commercial discipline and regulatory leadership.</p></section>
       <section class="card"><h2>Checks By Route</h2>${table(["Domain", "Permanent introduction", "Temporary supply"], plain(S.checksMatrix))}</section>`;
@@ -1003,8 +1080,8 @@
       <section class="card"><h2>Permanent Placement Fee</h2>
         <div class="form-grid calc" id="pcalc">
           <label class="fld"><span>First-year basic salary £</span><input type="number" step="100" name="salary" value="45000"></label>
-          <label class="fld"><span>Role band</span><select name="band"><option value="12.5">Care and support roles (12.5%)</option><option value="15">Senior / coordinator (15%)</option><option value="17.5" selected>Deputy / Registered Manager / Quality (17.5%)</option><option value="20">Executive / retained (20%)</option></select></label>
-          <label class="fld"><span>Agreed fee %</span><input type="number" step="0.5" name="fee" value="17.5"></label>
+          <label class="fld"><span>Role band</span><select name="band"><option value="12.5">Care Assistants and Support Workers (12.5%)</option><option value="15">Senior Carers and Team Leaders (15%)</option><option value="17.5">Deputy Managers and Coordinators (17.5%)</option><option value="20" selected>Registered Managers and Clinical Leads (20%)</option><option value="22.5">Senior operations, quality, retained (22.5%)</option></select></label>
+          <label class="fld"><span>Agreed fee %</span><input type="number" step="0.5" name="fee" value="20"></label>
         </div><div id="pcalc-out"></div></section></div>`;
   }
   function drawCalcs() {
@@ -1066,6 +1143,7 @@
       case "pipeline": html = pagePipeline(parts[1]); break;
       case "search": html = pageSearch(decodeURIComponent(parts.slice(1).join("/"))); break;
       case "reports": html = pageReports(); break;
+      case "actions": html = pageActions(); break;
       case "golive": html = pageGoLive(); break;
       case "controls": html = pageControls(); break;
       case "procedures": html = pageProcedures(parts[1]); break;
@@ -1123,6 +1201,12 @@
         board.addEventListener("drop", e => { const col = e.target.closest(".kcol"); if (!col) return; e.preventDefault(); const id = dragId || e.dataTransfer.getData("text/plain"); dragId = null; moveCard(which, id, col.dataset.col); });
         board.addEventListener("change", e => { const s = e.target.closest(".kmove"); if (s) moveCard(which, s.closest(".kcard").dataset.id, s.value); });
       }
+    }
+    if (parts[0] === "actions") {
+      $("#seed").addEventListener("click", seedActions);
+      $("#addact").addEventListener("click", () => openForm("actions", null, { "Status": "Not started", "Owner": state.lastBy || "" }));
+      app.querySelectorAll("[data-af]").forEach(b => b.addEventListener("click", () => { actions_filter = b.dataset.af; route(); }));
+      app.querySelectorAll("[data-act]").forEach(cb => cb.addEventListener("change", () => tickAction(cb.dataset.act, cb.checked)));
     }
     if (parts[0] === "search") {
       $("#sform").addEventListener("submit", e => { e.preventDefault(); const q = $("#sq").value.trim(); location.hash = "#/search/" + encodeURIComponent(q); });

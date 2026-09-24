@@ -43,6 +43,8 @@ HAV.lists = {
   invoiceType: ["Permanent Fee", "Retained Stage", "Compliance Project", "Temporary Supply"],
   creditStatus: ["Within Terms", "Overdue", "Stop Supply", "Paid"],
   caseType: ["Complaint", "Safeguarding", "Incident", "Whistleblowing", "Data Protection"],
+  actionPhase: ["Week 1: Foundations", "Week 2: Legal And Compliance", "Week 3: Market", "Week 4: First Business", "Temporary Staffing Readiness", "Ongoing"],
+  actionStatus: ["Not started", "In progress", "Done", "Blocked", "Not needed"],
   auditArea: ["Candidate Files", "Right To Work", "DBS Eligibility", "References", "Consent", "Client Terms", "Assignments", "AWR", "Invoices", "Incidents", "Data Protection"]
 };
 
@@ -116,7 +118,7 @@ HAV.registers = [
   },
   {
     key: "placements", title: "Placements", prefix: "PL", group: "Commercial",
-    intro: "Permanent and retained placements. Record fee trigger, guarantee period and retention outcome. Check in at week 1, week 4 and week 12.",
+    intro: "Permanent and retained placements. Record fee trigger, guarantee period and retention outcome. Check in at day 7, day 30, day 60 and day 90.",
     list: ["Job Title", "Client ID", "Candidate ID", "Fee Value", "Start Date", "12 Week Retained", "Status"],
     status: "Status",
     fields: [
@@ -236,6 +238,17 @@ HAV.registers = [
       ? "No complaint or incident is closed without a recorded outcome and learning." : null
   },
   {
+    key: "actions", title: "Action Plan", prefix: "AP", group: "Overview", nav: false,
+    intro: "Every launch task with a due date, who owns it, when it was done and where the evidence is.",
+    list: ["Task", "Phase", "Due Date", "Status", "Done Date"],
+    status: "Status",
+    fields: [
+      ["Task", "text", { required: true }], ["Phase", "select", { list: "actionPhase", required: true }], ["Deliverable", "text"],
+      ["Due Date", "date"], ["Owner", "text"], ["Status", "select", { list: "actionStatus", required: true }], ["Done Date", "date"],
+      ["Evidence / Notes", "textarea", { hint: "Where the proof is kept, for example the folder, file name or email." }]
+    ]
+  },
+  {
     key: "audits", title: "Audits", prefix: "AU", group: "Governance",
     intro: "Sample evidence monthly. A dashboard is not assurance unless the underlying files are checked. Verify corrective actions through evidence, not verbal assurance.",
     list: ["Audit Area", "Period", "Score %", "Critical Failure", "Owner", "Due Date", "Status"],
@@ -352,7 +365,7 @@ HAV.strategy = {
     ["Leadership search", "Highest", "Registered Manager, Home Manager, Deputy Manager, Operations Manager, Quality / Compliance Manager, Clinical Lead where appropriate."],
     ["Operational care management", "High", "Care Coordinator, Field Care Supervisor, Team Leader, Senior Care Assistant."],
     ["Care workforce permanent", "Selective", "Care Assistants, Support Workers, Domiciliary Care Workers, Live-in Care Workers."],
-    ["Temporary care workforce", "Later", "Care Assistants, Support Workers, Seniors and role-specific staff only after temp go-live."],
+    ["Temporary care workforce", "Later", "Lower-risk non-registered roles only after temp go-live: Care Assistants, Senior Care Assistants, Support Workers, Healthcare Assistants, Night Care Staff, Activity Coordinators, Kitchen and Domestic Staff. Supply only to CQC-registered providers, not directly to private individuals, unless advised otherwise."],
     ["Clinical and regulated professionals", "Controlled later phase", "Registered Nurses and other professionals only where registration, competence, indemnity and client governance controls are robust."]
   ],
   dont: [
@@ -363,15 +376,18 @@ HAV.strategy = {
     "Do not allow consultancy relationships to become implied guarantees of recruitment outcomes or CQC outcomes."
   ],
   fees: [
-    ["Care and support roles", "12.5% of first-year basic salary", "Use only where sourcing economics remain attractive."],
-    ["Senior / coordinator roles", "15%", "Default mid-market permanent fee."],
-    ["Deputy / Registered Manager / Quality roles", "17.5%", "Preferred specialist fee reflecting sector expertise and search intensity."],
-    ["Executive / specialist retained search", "20% or staged fixed fee", "Written retained terms, milestones and exclusivity period. Typically one-third on instruction, one-third on qualified shortlist, one-third on accepted offer."]
+    ["Care Assistants and Support Workers", "12.5% of first-year remuneration", "Use only where sourcing economics remain attractive."],
+    ["Senior Carers and Team Leaders", "15%", "Default mid-market permanent fee."],
+    ["Deputy Managers, Care Coordinators, Field Care Supervisors", "17.5%", "Specialist fee reflecting sector expertise."],
+    ["Registered Managers, Home Managers, Clinical Leads", "20%", "Search-intensive leadership roles."],
+    ["Senior operations, quality and compliance roles; retained search", "22.5% or staged fixed fee", "Written retained terms, milestones and exclusivity. One third on instruction, one third on shortlist, one third on accepted offer."],
+    ["Early-leaver guarantee", "Days 0–30 free replacement; days 31–60 50% credit; days 61–90 25% credit", "Only if the invoice was paid on time, the leaver was not dismissed unfairly or made redundant, and Haverton ran the whole process."]
   ],
   tempControls: [
     ["Gross profit per hour", "At least £5.50 per hour unless Director approves a documented strategic exception.", "Creates room for non-payroll operating cost and credit risk."],
     ["Gross margin", "At least 20% at assignment level.", "Prevents high-turnover, low-quality billings."],
-    ["Payment terms", "Aim 14 to 30 days; 45 days only with funding plan and strong credit.", "Payroll is paid before many clients settle invoices."],
+    ["Payment terms", "Weekly timesheets, weekly invoices, 7-day payment for first temporary clients; longer only with funding and strong credit.", "Workers must be paid even if the client has not paid (Conduct Regulations)."],
+    ["Charge rate build-up", "Pay + holiday + employer NI + pension + payroll + DBS and training + insurance + margin. Night, weekend and bank holiday rates quoted separately.", "Never quote a flat mark-up."],
     ["Credit limit", "Set per legal client and service group.", "Caps cash exposure."],
     ["Rate review", "At least annually and whenever statutory wage / on-costs change.", "Protects margin as labour costs rise."]
   ],
@@ -412,7 +428,7 @@ HAV.strategy = {
     "Match candidate to an evidenced vacancy, not to a vague opportunity.",
     "Prepare candidate for interview without scripting dishonest answers.",
     "Manage offer, notice, counter-offer risk and start date.",
-    "Follow up at week 1, week 4 and week 12; capture reasons for early attrition.",
+    "Follow up at day 7, day 30, day 60 and day 90; capture reasons for early attrition.",
     "Re-engage good candidates ethically and respect opt-out / do-not-contact requests."
   ],
   checksMatrix: [
@@ -584,4 +600,45 @@ HAV.fileStructure = [
   ["Placement file", "Vacancy, submission consent, interviews, offer, fee trigger, invoice, guarantee / retention follow-ups."],
   ["Incident / safeguarding file", "Restricted case chronology, evidence, referrals / notifications, decisions, learning."],
   ["Governance file", "Audits, KPI packs, management accounts, risk register, horizon scan, corrective actions, document control."]
+];
+
+/* ---------- 30 day launch action plan (seeded into the Action Plan register) ---------- */
+/* [day offset from start, phase, task, deliverable] */
+HAV.actionPlan = [
+  [1, "Week 1: Foundations", "Confirm niche, roles and service area", "Written service model"],
+  [2, "Week 1: Foundations", "Confirm permanent first, temporary readiness in parallel", "Business plan agreed"],
+  [3, "Week 1: Foundations", "Add SIC code 78109 to the Companies House action list", "Note for next confirmation statement"],
+  [4, "Week 1: Foundations", "Open or confirm the business bank account for recruitment income", "Account details for invoices"],
+  [5, "Week 1: Foundations", "Choose an accountant and a payroll provider with recruitment experience", "Payroll proposal"],
+  [6, "Week 1: Foundations", "Get 2 to 3 insurance quotes using the Insurance Broker Brief", "Insurance comparison"],
+  [7, "Week 1: Foundations", "Buy professional indemnity insurance (employers’ liability before any temporary worker)", "Insurance certificates"],
+  [8, "Week 1: Foundations", "Confirm ICO fee is paid and publish the Recruitment Privacy Notice", "ICO number; notice on website"],
+  [9, "Week 1: Foundations", "Accept the Supabase data processing agreement; set own password; delete the setup token", "Screenshot or note of acceptance"],
+  [10, "Week 1: Foundations", "Publish a Recruitment page on the website, separate from home care", "Live page"],
+  [11, "Week 2: Legal And Compliance", "Solicitor review: Client Terms Of Business (permanent)", "Signed-off terms"],
+  [12, "Week 2: Legal And Compliance", "Solicitor review: Client Terms For Temporary Supply", "Signed-off draft (not in use yet)"],
+  [13, "Week 2: Legal And Compliance", "Solicitor review: Candidate Terms, Temporary Worker Terms and Key Information Document", "Signed-off candidate pack"],
+  [14, "Week 2: Legal And Compliance", "Adopt the Candidate File Checklist and set up restricted folders", "Folder structure"],
+  [15, "Week 2: Legal And Compliance", "Register with a DBS umbrella body", "Account confirmed"],
+  [16, "Week 2: Legal And Compliance", "Start using the Interview Scoring Sheet for every interview", "First completed sheets"],
+  [17, "Week 2: Legal And Compliance", "Confirm safeguarding, complaints and whistleblowing procedure (SOP 17)", "Procedure read and dated"],
+  [18, "Week 3: Market", "Enter 150 local care providers in the Clients register", "150 client records"],
+  [19, "Week 3: Market", "Map decision-makers: owners, HR leads, Registered Managers", "Contacts recorded"],
+  [20, "Week 3: Market", "Create LinkedIn company page and update founder profile", "Live pages"],
+  [21, "Week 3: Market", "Start candidate sourcing: aim for 100 conversations this month", "Candidates registered"],
+  [22, "Week 3: Market", "Screen the first 20 candidates with consent records", "20 screened candidates"],
+  [23, "Week 3: Market", "Client calling campaign: 30 conversations", "Activity logged"],
+  [24, "Week 3: Market", "Send tailored introduction emails", "Emails logged"],
+  [25, "Week 3: Market", "Book 5 discovery meetings", "Meetings in diary"],
+  [26, "Week 4: First Business", "Win the first live permanent vacancy with signed terms", "Signed terms and Vacancy Brief"],
+  [27, "Week 4: First Business", "Check temporary rates for each role in the Pricing Calculators", "Rate card (not in use yet)"],
+  [28, "Week 4: First Business", "Credit-check possible temporary clients (no supply yet)", "Approved client list and limits"],
+  [29, "Week 4: First Business", "Audit documents and systems; record it in the Audits register", "Audit record"],
+  [30, "Week 4: First Business", "Review the pipeline and set the 90-day plan", "Monthly report"],
+  [45, "Temporary Staffing Readiness", "Payroll provider set up; PAYE, pension and holiday pay tested", "Test payroll run"],
+  [50, "Temporary Staffing Readiness", "Employers’ liability (at least £5 million) and temporary staffing cover in place", "Certificates"],
+  [55, "Temporary Staffing Readiness", "13-week cash-flow forecast and funding (for example invoice finance) agreed", "Forecast and facility letter"],
+  [60, "Temporary Staffing Readiness", "Credit limits, weekly invoicing, 7-day terms and stop-supply rule agreed", "Client credit file"],
+  [75, "Temporary Staffing Readiness", "Director signs every item in the Temp Go Live Gate", "Gate showing GO"],
+  [90, "Temporary Staffing Readiness", "Pilot with 1 to 2 trusted clients, then audit after the first payroll", "Pilot audit"]
 ];
