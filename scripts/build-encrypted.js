@@ -16,7 +16,7 @@ html = html.replace(/<script src="assets\/js\/data.js"><\/script>\s*<script src=
   `<script>${read("assets/js/data.js")}\n${read("assets/js/procedures.js")}\n${read("assets/js/app.js")}</script>`);
 if (/src="assets\//.test(html) || /href="assets\//.test(html)) throw new Error("Unresolved asset reference");
 
-/* 2. Encrypt: PBKDF2-SHA256 (600k) -> AES-256-GCM */
+/* 2. Encrypt: PBKDF2-SHA256 (1,000,000 iterations) -> AES-256-GCM */
 const salt = crypto.randomBytes(16), iv = crypto.randomBytes(12), iterations = 1000000;
 const key = crypto.pbkdf2Sync(pass.normalize("NFKC"), salt, iterations, 32, "sha256");
 const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
@@ -27,6 +27,12 @@ const payload = { v: 1, kdf: "PBKDF2-SHA256", iterations, salt: salt.toString("b
 const dist = path.join(root, "dist");
 fs.rmSync(dist, { recursive: true, force: true }); fs.mkdirSync(dist);
 fs.writeFileSync(path.join(dist, "payload.json"), JSON.stringify(payload));
+
+/* Source code backup: git archive of HEAD, encrypted with the same key and a fresh IV */
+const srcZip = require("child_process").execFileSync("git", ["archive", "--format=zip", "HEAD"], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+const srcIv = crypto.randomBytes(12), srcCipher = crypto.createCipheriv("aes-256-gcm", key, srcIv);
+const srcCt = Buffer.concat([srcCipher.update(srcZip), srcCipher.final(), srcCipher.getAuthTag()]);
+fs.writeFileSync(path.join(dist, "source.json"), JSON.stringify({ v: 1, iv: srcIv.toString("base64"), data: srcCt.toString("base64") }));
 fs.copyFileSync(path.join(root, "unlock", "unlock.js"), path.join(dist, "unlock.js"));
 fs.writeFileSync(path.join(dist, "index.html"), read("unlock/index.html"));
 fs.writeFileSync(path.join(dist, "robots.txt"), "User-agent: *\nDisallow: /\n");

@@ -483,7 +483,10 @@
         <div class="btn-row"><button class="btn" id="exp">Export full backup (JSON)</button><label class="btn ghost file">Import backup<input type="file" id="imp" accept="application/json,.json" hidden></label></div>
         <p class="muted small">Import replaces everything currently stored in this browser.</p>
         <h3>Records held</h3>${table(["Register", "Records"], counts, "compact")}
-        <button class="btn danger ghost" id="wipe">Erase all data in this browser</button></section>
+        <button class="btn danger ghost" id="wipe">Erase all data in this browser</button>
+        <h3>Site source code</h3>
+        <p>The full source code of this site is stored alongside it, encrypted with the same passphrase. Download it to make changes or to rebuild the site elsewhere.</p>
+        <button class="btn ghost" id="src">Download source code (zip)</button></section>
       <section class="card"><h2>Never Enter Here</h2><ul>
         <li>Passport, visa or identity document images or numbers</li><li>DBS certificate content or criminal-offence details</li><li>Health, disability or medical information</li><li>Bank, payroll or National Insurance details</li><li>Names or details of people receiving care</li><li>Equality monitoring data (keep separate from selection decisions)</li></ul>
         <p>Record status, reference and date only. Source evidence stays in restricted folders with least-privilege access and MFA.</p>
@@ -549,6 +552,19 @@
       ["#tcalc", "#pcalc"].forEach(sel => { $(sel).addEventListener("input", drawCalcs); $(sel).addEventListener("change", e => { if (e.target.name === "band") $("#pcalc [name=fee]").value = e.target.value; drawCalcs(); }); });
     }
     if (parts[0] === "data") {
+      $("#src").addEventListener("click", async () => {
+        try {
+          const jwk = sessionStorage.getItem("hav-k");
+          if (!jwk || !window.crypto || !crypto.subtle) throw new Error("Only available on the live site after unlocking");
+          const r = await fetch("source.json", { cache: "no-store" });
+          if (!r.ok) throw new Error("Source file not found");
+          const s = await r.json(), b64 = x => Uint8Array.from(atob(x), c => c.charCodeAt(0));
+          const key = await crypto.subtle.importKey("jwk", JSON.parse(jwk), { name: "AES-GCM" }, false, ["decrypt"]);
+          const zip = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(s.iv) }, key, b64(s.data));
+          const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([zip], { type: "application/zip" }));
+          a.download = "Haverton Operations Source.zip"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+        } catch (err) { toast("Source download failed: " + err.message); }
+      });
       $("#exp").addEventListener("click", () => download(`Haverton Operations Backup ${iso(today())}.json`, JSON.stringify(state, null, 1), "application/json"));
       $("#imp").addEventListener("change", e => {
         const f = e.target.files[0]; if (!f) return;
