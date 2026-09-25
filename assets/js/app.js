@@ -298,6 +298,13 @@
     $("#temp-pill").innerHTML = `<span class="pl-long">Temporary staffing</span><span class="pl-short">Temp</span>: ${tempLive() ? "GO" : "OFF"}`;
   }
   function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 3500); }
+  /* Colour-coded care setting, so home care, nursing, residential and supported living stand apart */
+  const SERVICE_TAG = { "Domiciliary Care": ["Home Care", "hc"], "Nursing Home": ["Nursing Home", "nh"], "Residential Care": ["Residential Home", "rh"], "Supported Living": ["Supported Living", "sl"], "Learning Disability": ["Learning Disability", "ld"], "Mental Health": ["Mental Health", "mh"] };
+  function serviceTag(v) {
+    if (!v) return "";
+    const [label, cls] = SERVICE_TAG[v] || [v, "ot"];
+    return `<span class="stag ${cls}">${esc(label)}</span>`;
+  }
   function badge(v) {
     if (!v) return "";
     const map = {
@@ -395,6 +402,7 @@
       `<div class="toolbar">
         <input type="search" id="q" placeholder="Search ${esc(reg.title.toLowerCase())}" aria-label="Search">
         <select id="sf" aria-label="Filter by status"><option value="">All statuses</option>${statuses.map(s => `<option>${esc(s)}</option>`).join("")}</select>
+        ${reg.typeFilter ? (() => { const n = {}; rows.forEach(r => { const t = r[reg.typeFilter]; if (t) n[t] = (n[t] || 0) + 1; }); return `<select id="tf" aria-label="Filter by service type"><option value="">All service types</option>${Object.keys(n).sort().map(t => `<option value="${esc(t)}">${esc((SERVICE_TAG[t] || [t])[0])} (${n[t]})</option>`).join("")}</select>`; })() : ""}
         <span class="spacer"></span>
         ${key === "followups" ? `<button class="btn ghost" id="ics" title="Download open follow ups as calendar events">Add to calendar</button>` : ""}
         ${key === "vacancies" && HAV.vacancyLeads ? `<button class="btn ghost" id="vleads" title="Add advertised vacancies from local providers as leads">Load vacancy leads</button>` : ""}
@@ -406,9 +414,10 @@
       <div id="reg-table"></div>`;
   }
   function drawRegisterTable(key) {
-    const reg = regByKey(key), q = ($("#q").value || "").toLowerCase(), sf = $("#sf").value;
+    const reg = regByKey(key), q = ($("#q").value || "").toLowerCase(), sf = $("#sf").value, tf = $("#tf") ? $("#tf").value : "";
     let rows = state.records[key].filter(r => {
       if (sf && String(valueOf(reg, r, reg.status)) !== sf) return false;
+      if (tf && String(r[reg.typeFilter] || "") !== tf) return false;
       if (!q) return true;
       return (r.id + " " + reg.fields.map(f => valueOf(reg, r, f[0])).join(" ")).toLowerCase().includes(q);
     });
@@ -418,6 +427,7 @@
       return [`<a class="rid" href="#/view/${key}/${encodeURIComponent(r.id)}">${esc(r.id)}</a>`].concat(reg.list.map((c, i) => {
         const t = fieldType(reg, c), v = valueOf(reg, r, c);
         const f = reg.fields.find(f => f[0] === c);
+        if (c === "Service Type") return serviceTag(v);
         if (/Critical Failure|Safeguarding Concern/.test(c)) return v === "Yes" ? `<span class="badge r">Yes</span>` : v === "No" ? `<span class="badge g">No</span>` : "";
         if (t === "select" || (t === "derived" && /Status|Retained/.test(c))) return badge(v);
         if (t === "derived") return fmt(v, f[2].fmt);
@@ -1208,6 +1218,7 @@
       drawRegisterTable(key);
       $("#q").addEventListener("input", () => drawRegisterTable(key));
       $("#sf").addEventListener("change", () => drawRegisterTable(key));
+      const tf = $("#tf"); if (tf) tf.addEventListener("change", () => drawRegisterTable(key));
       $("#add").addEventListener("click", () => openForm(key));
       $("#csv").addEventListener("click", () => csvFor(key));
       const ics = $("#ics"); if (ics) ics.addEventListener("click", exportICS);

@@ -56,7 +56,8 @@ HAV.registers = [
     key: "clients", title: "Clients", prefix: "CL", group: "Commercial",
     intro: "One row per legal client entity or service. Complete due diligence before accepting vacancies or shifts.",
     rule: "Do not supply where legal identity is unclear, terms are unsigned, safety information is withheld, payment risk is unacceptable or the client asks Haverton to bypass safer recruitment or worker rights.",
-    list: ["Legal Entity", "Service Type", "Primary Contact", "Client Status", "Terms Signed", "Credit Limit", "Last Review"],
+    list: ["Trading Name / Service", "Service Type", "Postcode", "Primary Contact", "Phone", "Client Status", "Terms Signed"],
+    typeFilter: "Service Type",
     status: "Client Status",
     importKey: r => ((r["CQC Location ID / Note"] || "").match(/\b1-\d{5,}\b/) || [""])[0],
     fields: [
@@ -93,6 +94,7 @@ HAV.registers = [
     rule: "Pause the vacancy if the client refuses to provide material role or safety information or requests an unlawful selection criterion. No fake vacancies.",
     list: ["Job Title", "Client ID", "Service Offer", "Location", "Target Fill Date", "Vacancy Status", "Priority"],
     status: "Vacancy Status",
+    typeFilter: "Service Type",
     importKey: r => (r["Advert Link"] || "").trim(),
     fields: [
       ["Client ID", "ref", { ref: "clients", required: true }], ["Service", "text"], ["Service Type", "select", { list: "serviceType" }],
