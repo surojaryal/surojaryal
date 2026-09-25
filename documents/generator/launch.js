@@ -1,8 +1,8 @@
 const { P, H1, H2, bullets, numbered, table, box, titleBlock, build } = require("./lib");
 const WHO = "**Haverton Care Limited, trading as Haverton Recruitment And Staffing. Permanent work. We act as an employment agency.**";
 const APPLY = (subject) => [H2("How to apply"),
-  P(`Email your CV to **info@havertoncare.co.uk** with the subject line **"${subject}"**, or call **01322 879778**. We will call you back for a short chat.`),
-  P("**We never charge candidates a fee.** We only send your CV to an employer after you have agreed to that specific role. Read how we use your information at havertoncare.co.uk [confirm privacy notice link].")];
+  P(`Register and upload your CV in 3 minutes at **operation.havertoncare.co.uk/apply**, or email **info@havertoncare.co.uk** with the subject line **"${subject}"**, or call **01322 879778**. We will call you back for a short chat.`),
+  P("**We never charge candidates a fee.** We only send your CV to an employer after you have agreed to that specific role. Read how we use your information at operation.havertoncare.co.uk/apply/privacy.html.")];
 const RTW = "You must have the right to work in the UK. Haverton does not provide visa sponsorship or immigration advice. If an employer offers sponsorship for a role, we will tell you.";
 const advert = (title, lines) => [H1(title), ...lines];
 
@@ -22,7 +22,7 @@ build(`${root}/7 Launch Kit/Job Adverts.docx`, [
     ["Job boards such as Indeed and DWP Find a Job: post **real, live vacancies** only. Use register-with-us adverts on your own website and social media", "Job board posting rules [confirm each site's current rules]"]
   ], [5, 3]),
   ...box("Free places to post", [
-    "**Your website Recruitment page** (see Recruitment Page.html in this folder).",
+    "**Your registration page**: operation.havertoncare.co.uk/apply (add ?src=facebook, ?src=linkedin and so on to see which channel works).", "**Your website Recruitment page** (see Recruitment Page.html in this folder).",
     "**Facebook**: your business page, and local community and care-worker job groups (check each group's rules).",
     "**LinkedIn**: personal posts and your company page. Best for Registered Manager and Deputy roles.",
     "**Indeed** and **DWP Find a Job**: free listings, for live vacancies only.",
@@ -88,9 +88,9 @@ build(`${root}/7 Launch Kit/Job Adverts.docx`, [
 
   ...advert("Short social media versions", [
     ...table(["Use for", "Post text"], [
-      ["Care Assistants (Facebook)", "Care Assistants and Support Workers around Swanley, Dartford, Bexley and Bromley looking for permanent work: register with us. This is not a specific vacancy; when an employer gives us a real role that fits, we will tell you, and we only share your CV with your OK. No fees, ever. Email your CV to info@havertoncare.co.uk. Haverton Care Limited (Haverton Recruitment And Staffing), permanent work, employment agency."],
-      ["Managers (LinkedIn)", "Registered Managers and Deputy Managers in Kent and South East London: if you would value a confidential conversation about your next step with someone who has done the job, message me. This is not a specific vacancy; nothing is shared without your agreement. Haverton Care Limited (Haverton Recruitment And Staffing), permanent work, employment agency."],
-      ["Temporary (Facebook)", "Temporary care work is coming soon. Haverton Recruitment And Staffing is preparing to offer temporary work in Kent, Bexley and Bromley. We are not offering shifts yet; message us to be told first. Haverton Care Limited (Haverton Recruitment And Staffing), temporary work, employment business."]
+      ["Care Assistants (Facebook)", "Care Assistants and Support Workers around Swanley, Dartford, Bexley and Bromley looking for permanent work: register with us. This is not a specific vacancy; when an employer gives us a real role that fits, we will tell you, and we only share your CV with your OK. No fees, ever. Register in 3 minutes: operation.havertoncare.co.uk/apply/?src=facebook. Haverton Care Limited (Haverton Recruitment And Staffing), permanent work, employment agency."],
+      ["Managers (LinkedIn)", "Registered Managers and Deputy Managers in Kent and South East London: if you would value a confidential conversation about your next step with someone who has done the job, message me or register confidentially at operation.havertoncare.co.uk/apply/?src=linkedin. This is not a specific vacancy; nothing is shared without your agreement. Haverton Care Limited (Haverton Recruitment And Staffing), permanent work, employment agency."],
+      ["Temporary (Facebook)", "Temporary care work is coming soon. Haverton Recruitment And Staffing is preparing to offer temporary work in Kent, Bexley and Bromley. We are not offering shifts yet; register at operation.havertoncare.co.uk/apply/?src=facebook to be told first. Haverton Care Limited (Haverton Recruitment And Staffing), temporary work, employment business."]
     ], [2, 7])
   ])
 ], { footer: "Job Adverts | Version 1.0 | September 2026" })
