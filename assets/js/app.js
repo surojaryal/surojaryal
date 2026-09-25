@@ -397,6 +397,7 @@
         <select id="sf" aria-label="Filter by status"><option value="">All statuses</option>${statuses.map(s => `<option>${esc(s)}</option>`).join("")}</select>
         <span class="spacer"></span>
         ${key === "followups" ? `<button class="btn ghost" id="ics" title="Download open follow ups as calendar events">Add to calendar</button>` : ""}
+        ${key === "clients" && HAV.cqcProviders ? `<button class="btn ghost" id="cqcload" title="Add or refresh CQC-registered providers in your priority area">Load CQC providers</button>` : ""}
         <label class="btn ghost file ${locked ? "is-disabled" : ""}">Import CSV<input type="file" id="csvin" accept=".csv,text/csv" hidden ${locked ? "disabled" : ""}></label>
         <button class="btn ghost" id="csv">Export CSV</button>
         <button class="btn" id="add" ${locked ? "disabled" : ""}>Add record</button>
@@ -884,7 +885,8 @@
     if (m) { const y = m[3].length === 2 ? "20" + m[3] : m[3]; return `${y}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`; }
     return v;
   }
-  function importCSV(key, text) {
+  function importCSV(key, text, opts) {
+    const keep = (opts && opts.keep) || [];
     const reg = regByKey(key), rows = parseCSV(text);
     if (rows.length < 2) throw new Error("No data rows found");
     const norm = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -913,7 +915,7 @@
     recs.forEach(([wanted, o]) => {
       const hit = target([wanted, o]);
       if (hit) {
-        const changed = Object.keys(o).filter(k => o[k] && String(hit[k] || "") !== o[k]);
+        const changed = Object.keys(o).filter(k => o[k] && !(keep.includes(k) && hit[k]) && String(hit[k] || "") !== o[k]);
         if (changed.length) { changed.forEach(k => { hit[k] = o[k]; }); hit.modified = new Date().toISOString(); logChange(key, hit.id, "updated", changed); }
         return;
       }
@@ -1188,6 +1190,10 @@
       $("#add").addEventListener("click", () => openForm(key));
       $("#csv").addEventListener("click", () => csvFor(key));
       const ics = $("#ics"); if (ics) ics.addEventListener("click", exportICS);
+      const cqc = $("#cqcload"); if (cqc) cqc.addEventListener("click", () => {
+        /* Safe to run again: matches on CQC location ID, refreshes contacts, never resets a client's status */
+        try { const n = importCSV("clients", HAV.cqcProviders.csv, { keep: ["Client Status"] }); if (n) { route(); toast(`CQC providers loaded: ${n} added or refreshed`); } } catch (err) { toast("Load failed: " + err.message); }
+      });
       $("#csvin").addEventListener("change", e => {
         const file = e.target.files[0]; if (!file) return;
         const rd = new FileReader();

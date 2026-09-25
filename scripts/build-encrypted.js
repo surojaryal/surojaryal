@@ -25,8 +25,8 @@ html = html.replace(/<link rel="icon"[^>]*>/, `<link rel="icon" href="data:image
 const font = f => `data:font/woff2;base64,${fs.readFileSync(path.join(root, "assets/fonts", f)).toString("base64")}`;
 const css = read("assets/css/styles.css").replace(/url\("\.\.\/fonts\/([^"]+)"\)/g, (_, f) => `url("${font(f)}")`);
 html = html.replace(/<link rel="stylesheet" href="assets\/css\/styles.css">/, () => `<style>${css}</style>`);
-html = html.replace(/<script src="assets\/js\/cloud.js"><\/script>\s*<script src="assets\/js\/data.js"><\/script>\s*<script src="assets\/js\/procedures.js"><\/script>\s*<script src="assets\/js\/app.js"><\/script>/,
-  () => `<script>${cloudConfig}\n${read("assets/js/cloud.js")}\n${read("assets/js/data.js")}\n${read("assets/js/procedures.js")}\n${read("assets/js/app.js")}</script>`);
+html = html.replace(/<script src="assets\/js\/cloud.js"><\/script>\s*<script src="assets\/js\/data.js"><\/script>\s*<script src="assets\/js\/procedures.js"><\/script>\s*<script src="assets\/js\/targets.js"><\/script>\s*<script src="assets\/js\/app.js"><\/script>/,
+  () => `<script>${cloudConfig}\n${read("assets/js/cloud.js")}\n${read("assets/js/data.js")}\n${read("assets/js/procedures.js")}\n${read("assets/js/targets.js")}\n${read("assets/js/app.js")}</script>`);
 if (/src="assets\//.test(html) || /href="assets\//.test(html)) throw new Error("Unresolved asset reference");
 
 /* 2. Encrypt with AES-256-GCM */
