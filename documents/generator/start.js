@@ -13,7 +13,7 @@ build(`${root}/1 Start Here/Read Me First.docx`, [
     ["4 Forms", "Candidate File Checklist, Candidate Registration Form, Consent To Represent, Client Vacancy Brief, Interview Scoring Sheet, Reference Request, Placement Check In Record", "Everyday recruitment work"],
     ["5 Sales", "Client Emails And Call Script, Fee Proposal Letter", "Winning clients"],
     ["6 Temporary Staffing Drafts", "Temporary Worker Terms, Client Terms For Temporary Supply, Assignment Confirmation, Go Live Checklist", "Getting ready for temporary staffing. **Not for use** until the Go Live Gate is signed."],
-    ["7 Launch Kit", "Target Providers (spreadsheet), Target Providers Import, Candidates Import Template, Job Adverts, Recruitment Page, Temporary Staffing Cash Flow (spreadsheet)", "Starting now: who to contact, adverts to post, website wording, and the cash you need for temporary staffing"],
+    ["7 Launch Kit", "Target Providers (your local area, with manager names), Target Providers England (30,186 services by region), Target Providers Import, Candidates Import Template, Job Adverts, Recruitment Page, Temporary Staffing Cash Flow (spreadsheet)", "Starting now: who to contact, adverts to post, website wording, and the cash you need for temporary staffing"],
     ["8 First Client", "This Week 20 Providers (spreadsheet), This Week Emails, First Client Playbook, Follow Ups Import", "Your first week of calls and emails, and every step from first call to first paid invoice"]
   ], [2, 4, 4]),
   H1("Track your progress in three ways"),

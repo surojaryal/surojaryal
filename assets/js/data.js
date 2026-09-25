@@ -363,7 +363,7 @@ HAV.strategy = {
     ["Trading division", "Haverton Recruitment And Staffing"],
     ["Initial operating role", "Employment agency for permanent introductions and retained search."],
     ["Later operating role", "Employment business for temporary supply only after the Temp Go Live Gate."],
-    ["Initial geography", "Swanley, Dartford, Gravesham, Sevenoaks, Bexley, Bromley, Medway and South East London, then wider Kent / London / Surrey / Essex / East Sussex."],
+    ["Geography", "Permanent recruitment and retained search: care providers across England (30,186 CQC-registered care services, CQC directory September 2026). Temporary supply: pilot in Kent and South East London first, then region by region once controls, on-call cover and cash flow are proven."],
     ["Sponsorship vacancies", "Not accepted as a core launch proposition. Haverton does not provide immigration advice. Any future immigration-related activity requires separate legal and operational review."],
     ["Candidate fees", "No work-finding fees are charged to candidates."],
     ["Authorised decision maker", "Director or formally delegated manager for client approval, pricing exceptions and candidate introduction authority."]

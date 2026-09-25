@@ -4,7 +4,7 @@ const W = JSON.parse(fs.readFileSync(__dirname + "/../week.json", "utf8"));
 const SIG = ["Kind regards,", "**Suroj Aryal**", "Founder and Director, Haverton Recruitment And Staffing", "01322 879778 | info@havertoncare.co.uk | havertoncare.co.uk",
   "_Haverton Care Limited, registered in England and Wales, company number 17025493. Registered office: 128 City Road, London, EC1V 2NX._",
   "_I found your name and your service's details on the public CQC website. We hold only your business contact details, to offer our recruitment services, under our legitimate interests. You can ask what we hold, or ask us to delete it, at any time. If you would rather not hear from me, just reply \"no thanks\" and I will not contact you again._"];
-const who = "I am a former CQC Registered Manager with around 15 years in adult social care, and I have set up Haverton Recruitment, a local specialist recruitment agency for care providers around Swanley, Dartford, Bexley and Bromley.";
+const who = "I am a former CQC Registered Manager with around 15 years in adult social care, and I have set up Haverton Recruitment, a specialist recruitment agency for care providers across England, based in Kent.";
 const BRAND = { "Radfield Home Care Bromley, Orpington & Beckenham": "Radfield Home Care Bromley, Orpington & Beckenham", "Lauriem White Oak Court (EC)": "Lauriem at White Oak Court", "Home Instead": "Home Instead (Dartford Home Care Ltd)", "SAP Care Services Limited": "SAP Care Services", "Homesdale Supported Living": "Homesdale Supported Living" };
 function body(o) {
   const svc = o.name.replace(/ Limited$| Ltd\.?$| - Head Office$| \(EC\)$/, "");

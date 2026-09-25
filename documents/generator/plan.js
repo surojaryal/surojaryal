@@ -2,7 +2,7 @@ const { P, H1, H2, H3, BR, bullets, numbered, table, box, titleBlock, build, toc
 const gbp = n => "£" + Math.round(n).toLocaleString("en-GB");
 
 module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment Business Plan.docx`, [
-  ...titleBlock("Haverton Recruitment Business Plan", "Specialist recruitment for adult social care in Kent and South East London", [
+  ...titleBlock("Haverton Recruitment Business Plan", "Specialist recruitment for adult social care providers across England", [
     ["Legal entity", "Haverton Care Limited, company number 17025493"],
     ["Trading name", "Haverton Recruitment And Staffing"],
     ["Registered office", "128 City Road, London, EC1V 2NX"],
@@ -25,7 +25,7 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
   BR(),
 
   H1("1. Summary"),
-  P("**What we are.** A specialist recruitment agency for adult social care. We find care managers, senior carers and care staff for care homes, home care agencies and supported living services in Kent and South East London."),
+  P("**What we are.** A specialist recruitment agency for adult social care. We find care managers, nurses, senior carers and care staff for care homes, nursing homes, home care agencies and supported living services **across England**. Permanent recruitment is England-wide from the start. Temporary staffing begins with a small pilot near our Kent base and expands region by region only when the controls are proven."),
   P("**Why we will win.** Most agencies can send a CV. Few understand what makes a Registered Manager succeed in a struggling service, how safeguarding culture or medication practice affects the right hire, or what evidence a provider needs for CQC. Our founder has around 15 years in adult social care, including as a CQC Registered Manager who achieved a Good rating. That experience is our advantage."),
   ...box("Our statement", "Haverton Recruitment And Staffing provides permanent and, in time, temporary staff for care homes, home care and supported living providers. Led by an experienced former Registered Manager, we understand CQC expectations, safer recruitment, safeguarding, staffing pressures and person-centred care. We do not simply send CVs. We introduce carefully screened people who understand dignity, safety, accountability and quality care."),
   P("**How we will grow, safely.**"),
@@ -49,7 +49,7 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     ["Trading name for recruitment", "Haverton Recruitment And Staffing"],
     ["What we are legally", "An **employment agency** for permanent introductions. Later, an **employment business** for temporary supply, only after the Go Live Gate."],
     ["Regulator", "The **Fair Work Agency** enforces the rules for agencies in Great Britain (from 7 April 2026). CQC does not regulate recruitment agencies."],
-    ["Where we work", "Swanley, Dartford, Gravesham, Sevenoaks, Bexley, Bromley, Medway and South East London first, then wider Kent, London, Surrey, Essex and East Sussex."],
+    ["Where we work", "**Permanent recruitment and retained search: all of England.** Clients are briefed by phone or video, candidates are interviewed by video, and we visit sites where it adds value. **Temporary staffing: a local pilot first** (Kent and South East London, near our base), then region by region. Temporary supply needs local on-call cover, fast replacement of workers and local compliance checks, so it cannot safely start everywhere at once."],
     ["What we will not do", "Charge candidates fees. Give immigration advice. Promise visa sponsorship. Recruit overseas in the first year (it needs the Code of Practice for international recruitment and ethical recruiter standards). Advertise jobs that do not exist. Guarantee CQC outcomes. Chase NHS framework work before we have a strong independent care track record."],
     ["CQC boundary", "Supplying staff to registered providers does not make us a CQC provider. Supplying carers **directly to private individuals** in their homes could, so we supply only to registered providers unless we take advice. We never describe the recruitment business as CQC registered."],
     ["SIC codes", "Registered: 70229, 78200, 85590, 88100. **Add 78109** (employment placement agencies) at the next confirmation statement."]
@@ -67,7 +67,12 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
 
   H1("3. The market"),
   P("**Fact:** adult social care in England has long-standing recruitment and retention pressure. Skills for Care publishes the official workforce figures each year in _The State of the Adult Social Care Sector and Workforce in England_. **[confirm the latest vacancy and turnover figures from that report before quoting them to clients or funders]**"),
-  P("**Local figures to verify:** an external research summary suggested Kent has around 917 regulated adult social care services, about 46,000 posts and about 2,700 vacancies, and that Bexley has around 106 services with a vacancy rate near 10.2%. **[verify each figure against Skills for Care local area data, with the date, before using it]**"),
+  P("**Verified market size (CQC care directory, 23 September 2026):** there are **30,186 CQC-registered care services in England** of the types we recruit for: 14,464 home care agencies, 10,418 residential homes, 5,029 supported living services and 4,532 nursing homes (a service can be more than one type)."),
+  ...table(["Region", "Care services", "Region", "Care services"], [
+    ["South East", "5,520", "South West", "3,246"], ["London", "3,891", "East Midlands", "2,957"], ["North West", "3,611", "Yorkshire and Humber", "2,765"],
+    ["East of England", "3,554", "North East", "1,205"], ["West Midlands", "3,437", "England total", "30,186"]
+  ], [3, 2, 3, 2]),
+  P("**How we cover England as a small business:** we focus first on roles where the client will pay for expertise and distance does not matter: Registered and Deputy Managers, nurses and clinical leads, and senior or hard-to-fill roles. Candidates for these roles relocate or travel, and interviews work well by video. Care assistant roles are filled by advertising in the client's own town."),
   P("**What this means for providers:** unfilled manager and senior roles put care quality, CQC ratings and income at risk. Agency costs and poor hires are expensive. Providers need recruiters who can judge care competence, not just match keywords."),
   H2("Who we sell to"),
   ...table(["Tier", "Who", "Their problem", "How we sell"], [
@@ -82,10 +87,10 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     ["High", "Care Coordinator, Field Care Supervisor, Team Leader, Senior Care Assistant"],
     ["Selective", "Care Assistants, Support Workers, Domiciliary and Live-in Care Workers"],
     ["Temporary, after go-live", "Lower-risk non-registered roles: Care Assistants, Senior Care Assistants, Support Workers, Healthcare Assistants, Night Care Staff, Activity Coordinators, Kitchen and Domestic Staff"],
-    ["Not at the start", "Registered Nurses, agency Clinical Leads, doctors and specialist clinicians, until compliance is audited and clinical advice is in place"]
+    ["Not at the start (temporary supply only)", "Temporary Registered Nurses, agency Clinical Leads, doctors and specialist clinicians, until compliance is audited and clinical advice is in place. Permanent nurse and clinical lead recruitment is included from the start."]
   ], [2, 6]),
   H2("Competition"),
-  P("We compete with national care staffing agencies, local care recruitment agencies in Kent and South East London, general recruitment agencies, job boards, and providers hiring directly. **[Complete a named local competitor table before launch: name, services, fees if public, reviews.]**"),
+  P("We compete with national care staffing agencies, regional care recruitment agencies, general recruitment agencies, job boards, and providers hiring directly. **[Complete a named local competitor table before launch: name, services, fees if public, reviews.]**"),
   P("**We do not compete on being cheapest.** We compete on lower hiring risk, speed with evidence, sector knowledge, fair treatment of candidates and repeat results."),
 
   H1("4. Services and prices"),
@@ -130,7 +135,7 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
     "**Website:** a clear Recruitment page on havertoncare.co.uk, separate from home care, with candidate registration and a client enquiry form.",
     "**Google Business Profile and Google for Jobs:** free listing; job adverts marked up so Google can show them.",
     "**DWP Find a Job and Indeed free listings** for genuine vacancies.",
-    "**Local networks:** registered manager networks, local authority provider forums, care associations in Kent and London.",
+    "**Networks across England:** registered manager networks (Skills for Care), local authority provider forums and regional care associations in each region we target.",
     "**Referrals:** ask every placed candidate and satisfied client for one introduction."
   ]),
   H2("Sales stages"),

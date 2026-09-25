@@ -26,13 +26,13 @@ build(`${root}/7 Launch Kit/Job Adverts.docx`, [
     "**Facebook**: your business page, and local community and care-worker job groups (check each group's rules).",
     "**LinkedIn**: personal posts and your company page. Best for Registered Manager and Deputy roles.",
     "**Indeed** and **DWP Find a Job**: free listings, for live vacancies only.",
-    "**Local colleges and training providers** running health and social care courses; **Jobcentre Plus** offices in Swanley, Dartford, Bexleyheath and Orpington [confirm local offices]."
+    "**Local colleges, training providers and Jobcentre Plus** in the town where each client needs staff."
   ]),
 
   ...advert("Advert 1: Care Assistants and Support Workers (talent pool, permanent)", [
     P("**Register with us: Care Assistants and Support Workers looking for permanent work**", { run: { size: 26 } }),
     P(WHO),
-    P("We invite caring, reliable Care Assistants and Support Workers who live around Swanley, Dartford, Bexley, Bromley, Sevenoaks and Gravesend to **register with us** for permanent work in adult social care."),
+    P("We invite caring, reliable Care Assistants and Support Workers across England to **register with us** for permanent work in adult social care, close to where they live."),
     P("**This advert is not for a specific vacancy.** When an employer gives us a real vacancy that suits you, we will tell you the employer, the pay and the hours, and we will only put you forward if you say yes."),
     H2("We would like to hear from you if you"),
     ...bullets(["have experience in care, or have strong people skills and want to start a career in care", "treat people with dignity and respect, and want to make a difference", "are reliable and can commit to a regular pattern of work", "can provide two references covering your recent work or study"]),
@@ -45,7 +45,7 @@ build(`${root}/7 Launch Kit/Job Adverts.docx`, [
   ...advert("Advert 2: Senior Care Assistants and Team Leaders (talent pool, permanent)", [
     P("**Register with us: Senior Care Assistants and Team Leaders looking for permanent work**", { run: { size: 26 } }),
     P(WHO),
-    P("Are you ready for your next step? We invite experienced Senior Care Assistants and Team Leaders in Kent, Bexley and Bromley to **register with us** for permanent work. This advert is not for a specific vacancy; when an employer gives us a suitable real vacancy we will contact you, and we only share your CV with your agreement."),
+    P("Are you ready for your next step? We invite experienced Senior Care Assistants and Team Leaders across England to **register with us** for permanent work. This advert is not for a specific vacancy; when an employer gives us a suitable real vacancy we will contact you, and we only share your CV with your agreement."),
     H2("Useful experience"),
     ...bullets(["Leading a shift and supporting a care team", "Safe medication administration, with competency assessments", "Writing and reviewing care plans and risk assessments", "Recognising and reporting safeguarding concerns", "A Level 2 or Level 3 Diploma in Adult Care, or working towards one (helpful, not always essential)"]),
     H2("Why register with us"),
@@ -57,7 +57,7 @@ build(`${root}/7 Launch Kit/Job Adverts.docx`, [
   ...advert("Advert 3: Registered Managers and Deputy Managers (confidential, permanent)", [
     P("**Registered Managers and Deputy Managers: confidential career conversations**", { run: { size: 26 } }),
     P(WHO),
-    P("If you are a Registered Manager or Deputy Manager in adult social care, or ready to step up, we would like to talk to you in confidence. Register with us for permanent opportunities in Kent, Bexley and Bromley. This advert is not for a specific vacancy."),
+    P("If you are a Registered Manager or Deputy Manager in adult social care, or ready to step up, we would like to talk to you in confidence. Register with us for permanent opportunities with care providers across England. This advert is not for a specific vacancy."),
     H2("What to expect"),
     ...bullets(["A confidential conversation with a former CQC Registered Manager who understands the role", "Honest information about each provider before you decide", "Your details are never shared without your agreement to the specific role", "No fee, ever"]),
     H2("Helpful background"),
@@ -81,16 +81,16 @@ build(`${root}/7 Launch Kit/Job Adverts.docx`, [
   ...advert("Advert 5: Temporary work (register your interest only)", [
     P("**Temporary care work coming soon: register your interest**", { run: { size: 26 } }),
     P("**Haverton Care Limited, trading as Haverton Recruitment And Staffing. Temporary work (not yet available). We will act as an employment business.**"),
-    P("We are preparing to offer temporary work to Care Assistants, Senior Care Assistants and Support Workers in Kent, Bexley and Bromley. **We are not offering shifts yet and there are no vacancies at this stage.** If you would like to hear when we open, send us your name, phone number, the role you do and the areas you can travel to."),
+    P("We are preparing to offer temporary work to Care Assistants, Senior Care Assistants and Support Workers starting in Kent and South East London. **We are not offering shifts yet and there are no vacancies at this stage.** If you would like to hear when we open, send us your name, phone number, the role you do and the areas you can travel to."),
     P("We will not ask for your documents until we are ready to offer work, and we will never charge you a fee."),
     ...APPLY("Temporary interest")
   ]),
 
   ...advert("Short social media versions", [
     ...table(["Use for", "Post text"], [
-      ["Care Assistants (Facebook)", "Care Assistants and Support Workers around Swanley, Dartford, Bexley and Bromley looking for permanent work: register with us. This is not a specific vacancy; when an employer gives us a real role that fits, we will tell you, and we only share your CV with your OK. No fees, ever. Register in 3 minutes: operation.havertoncare.co.uk/apply/?src=facebook. Haverton Care Limited (Haverton Recruitment And Staffing), permanent work, employment agency."],
-      ["Managers (LinkedIn)", "Registered Managers and Deputy Managers in Kent and South East London: if you would value a confidential conversation about your next step with someone who has done the job, message me or register confidentially at operation.havertoncare.co.uk/apply/?src=linkedin. This is not a specific vacancy; nothing is shared without your agreement. Haverton Care Limited (Haverton Recruitment And Staffing), permanent work, employment agency."],
-      ["Temporary (Facebook)", "Temporary care work is coming soon. Haverton Recruitment And Staffing is preparing to offer temporary work in Kent, Bexley and Bromley. We are not offering shifts yet; register at operation.havertoncare.co.uk/apply/?src=facebook to be told first. Haverton Care Limited (Haverton Recruitment And Staffing), temporary work, employment business."]
+      ["Care Assistants (Facebook)", "Care Assistants and Support Workers across England looking for permanent work: register with us. This is not a specific vacancy; when an employer gives us a real role that fits, we will tell you, and we only share your CV with your OK. No fees, ever. Register in 3 minutes: operation.havertoncare.co.uk/apply/?src=facebook. Haverton Care Limited (Haverton Recruitment And Staffing), permanent work, employment agency."],
+      ["Managers (LinkedIn)", "Registered Managers and Deputy Managers across England: if you would value a confidential conversation about your next step with someone who has done the job, message me or register confidentially at operation.havertoncare.co.uk/apply/?src=linkedin. This is not a specific vacancy; nothing is shared without your agreement. Haverton Care Limited (Haverton Recruitment And Staffing), permanent work, employment agency."],
+      ["Temporary (Facebook)", "Temporary care work is coming soon. Haverton Recruitment And Staffing is preparing to offer temporary work, starting in Kent and South East London. We are not offering shifts yet; register at operation.havertoncare.co.uk/apply/?src=facebook to be told first. Haverton Care Limited (Haverton Recruitment And Staffing), temporary work, employment business."]
     ], [2, 7])
   ])
 ], { footer: "Job Adverts | Version 1.0 | September 2026" })

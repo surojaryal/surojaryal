@@ -46,7 +46,7 @@ build(`${root}/3 Legal/Insurance Broker Brief.docx`, [
   ...form([["Business", "Haverton Care Limited (company 17025493), trading as Haverton Recruitment And Staffing"], ["Contact", "Suroj Aryal, Director | info@havertoncare.co.uk | 01322 879778"],
     ["What we do now", "Permanent recruitment for adult social care providers (employment agency). We introduce candidates; clients employ them."],
     ["What we plan", "From around month 5 to 7: temporary supply of non-registered care staff (Care Assistants, Senior Care Assistants, Support Workers, Healthcare Assistants, night staff, domestic and kitchen staff) to CQC-registered care homes, nursing homes, supported living and home care providers (employment business). No nurses or clinicians at first."],
-    ["Area", "Kent, South East London and neighbouring counties"], ["Expected Year 1 turnover", "£98,000 (cautious) to £545,050 (target)"], ["Staff", "Director only at launch; temporary workers from the pilot"]], 2, 5),
+    ["Area", "Permanent recruitment: clients across England. Temporary supply: pilot in Kent and South East London first, then region by region"], ["Expected Year 1 turnover", "£98,000 (cautious) to £545,050 (target)"], ["Staff", "Director only at launch; temporary workers from the pilot"]], 2, 5),
   H1("Cover we are asking about"),
   ...table(["Cover", "Level to quote", "Needed from"], [
     ["Professional indemnity (recruitment, including negligent vetting and advice)", "£1m and £2m", "Now"],
