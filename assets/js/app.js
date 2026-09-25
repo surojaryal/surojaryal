@@ -901,8 +901,22 @@
       return [wanted, o];
     }).filter(([, o]) => Object.values(o).some(v => v));
     if (!recs.length) throw new Error("No data rows found");
-    if (!confirm(`Import ${recs.length} record(s) into ${reg.title}? ${map.length} column(s) matched: ${map.map(m => m[0][0]).slice(0, 8).join(", ")}${map.length > 8 ? "…" : ""}`)) return 0;
+    /* Rows that match an existing record (same ID, or the register's import key such as
+       the CQC location ID) update that record's non-empty fields instead of duplicating it. */
+    const keyOf = reg.importKey || (() => "");
+    const byKey = new Map();
+    state.records[key].forEach(r => { const k = keyOf(r); if (k) byKey.set(k, r); });
+    const byId = new Map(state.records[key].map(r => [r.id, r]));
+    const target = ([wanted, o]) => (wanted && byId.get(wanted)) || (keyOf(o) && byKey.get(keyOf(o))) || null;
+    const nUpd = recs.filter(target).length, nNew = recs.length - nUpd;
+    if (!confirm(`${reg.title}: add ${nNew} new record(s)${nUpd ? ` and update ${nUpd} existing record(s)` : ""}? ${map.length} column(s) matched: ${map.map(m => m[0][0]).slice(0, 8).join(", ")}${map.length > 8 ? "…" : ""}`)) return 0;
     recs.forEach(([wanted, o]) => {
+      const hit = target([wanted, o]);
+      if (hit) {
+        const changed = Object.keys(o).filter(k => o[k] && String(hit[k] || "") !== o[k]);
+        if (changed.length) { changed.forEach(k => { hit[k] = o[k]; }); hit.modified = new Date().toISOString(); logChange(key, hit.id, "updated", changed); }
+        return;
+      }
       let id = wanted && !existing.has(wanted) && new RegExp("^" + reg.prefix + "\\d+$").test(wanted) ? wanted : "";
       if (id) { const n = parseInt(id.slice(reg.prefix.length), 10); if (n > state.seq[key]) state.seq[key] = n; } else id = newId(key);
       existing.add(id);
@@ -1177,7 +1191,7 @@
       $("#csvin").addEventListener("change", e => {
         const file = e.target.files[0]; if (!file) return;
         const rd = new FileReader();
-        rd.onload = () => { try { const n = importCSV(key, String(rd.result)); if (n) { route(); toast(`Imported ${n} record(s)`); } } catch (err) { toast("Import failed: " + err.message); } e.target.value = ""; };
+        rd.onload = () => { try { const n = importCSV(key, String(rd.result)); if (n) { route(); toast(`Import done: ${n} row(s) added or updated`); } } catch (err) { toast("Import failed: " + err.message); } e.target.value = ""; };
         rd.readAsText(file);
       });
     }

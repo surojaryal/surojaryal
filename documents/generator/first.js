@@ -17,6 +17,12 @@ function body(o) {
         : `I screen every candidate by interview and check work history, references and qualifications before I introduce them, and I only send a CV when the candidate has agreed to be put forward for your ${o.role} role.`,
       "You pay nothing unless you hire someone I introduce, and our terms include a free replacement if they leave in the first 30 days.",
       "Would a 15-minute call this week be useful? I am happy to share what I am seeing locally for this role, whether or not you use us."] };
+  if (o.norm) return {
+    subject: `Registered Manager recruitment for ${svc}`,
+    lines: [who, `I understand ${svc} may be looking to appoint a Registered Manager. If that is right, I would be glad to help.`,
+      "Having done the job myself, I assess manager candidates on how they have actually run a service: safeguarding, medication governance, audits, staffing and working with CQC, not just their CV.",
+      "You pay nothing unless you appoint someone I introduce, and our terms include a free replacement if they leave in the first 30 days.",
+      "Could we speak for 15 minutes this week? If I have got this wrong, please accept my apologies."] };
   const homeLine = /Nursing/.test(o.type)
     ? "From my own time as a Registered Manager, I know senior carers, deputy managers and nurse leaders are often the hardest roles to fill. If any of those are open now or coming up, I would be glad to help."
     : /Residential/.test(o.type)
@@ -32,15 +38,15 @@ function body(o) {
 module.exports = (root) => [
 build(`${root}/8 First Client/This Week Emails.docx`, [
   ...titleBlock("This Week Emails", "20 personal first emails, one per provider on your call sheet", [
-    ["Send from", "info@havertoncare.co.uk"], ["When", "Straight after your call, or if nobody answers"], ["Before sending", "Replace \"Dear Manager\" with the manager's name (from the CQC page or the call). For Priority A, check the advert is still live."]
+    ["Send from", "info@havertoncare.co.uk"], ["When", "Straight after your call, or if nobody answers"], ["Before sending", "Names are the Registered Manager or Nominated Individual shown on each CQC page on 25 September 2026. Confirm the name on your call. For Priority A, check the advert is still live."]
   ]),
   ...box("Rules", ["Emails to limited companies are allowed without prior consent under PECR, as long as you say who you are and include the opt-out line (already in each email). Honour every opt-out straight away and mark the provider \"Do Not Supply\" in the CRM.",
     "Do not attach anything to a first email. Send terms only after they show interest.",
     "Do not mention their CQC rating or report."]),
   ...W.flatMap((o, i) => { const b = body(o); return [
     H1(`${i + 1}. ${o.name}`),
-    P(`_${o.type}, ${o.town} ${o.pc} | Priority ${o.tier} | ${o.email ? "Email: " + o.email : "Email: ask on the call or use their website contact form"}_`),
-    P(`**Subject:** ${b.subject}`), P("Dear Manager,"), ...b.lines.map(l => P(l)), ...SIG.map(l => P(l))
+    P(`_${o.type}, ${o.town} ${o.pc} | Priority ${o.tier} | To: ${o.contact || "the manager"} | ${o.email ? "Email: " + o.email : "Email: ask on the call or use their website contact form"}_`),
+    P(`**Subject:** ${b.subject}`), P(`${o.salute || "Dear Manager"},`), ...b.lines.map(l => P(l)), ...SIG.map(l => P(l))
   ]; }),
   H1("Follow-up email (send on Monday 5 October to anyone who has not replied)"),
   P("**Subject:** Re: [original subject]"), P("Dear [Name],"),

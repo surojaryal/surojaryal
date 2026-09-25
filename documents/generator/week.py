@@ -15,13 +15,13 @@ wb=Workbook();s=wb.active;s.title='This Week'
 s['A1']='This Week: 20 Providers to Contact';s['A1'].font=Font(name='Arial',size=16,bold=True,color=NAVY)
 s['A2']='Week starting Monday 28 September 2026 | Priority A = live vacancy seen on Indeed, call first | Check every number on the TPS website (Corporate TPS) before calling';s['A2'].font=A(color='555555')
 H=['#','Priority','Call on','Service','Provider (legal entity)','Type','Town','Postcode','Miles from Swanley','Phone','Email found','Website','CQC page','Why this one','CTPS checked?','Call 1 outcome','Email sent (date)','Follow up on','Manager name','Notes']
-Wd=[4,8,11,34,34,18,13,10,9,14,28,30,40,50,12,20,14,12,20,30]
+Wd=[4,8,11,34,34,18,13,10,9,14,28,30,40,50,12,20,14,12,36,30]
 for j,h in enumerate(H,1):
     c=s.cell(row=4,column=j,value=h);c.font=Font(name='Arial',size=11,bold=True,color='FFFFFF');c.fill=PatternFill('solid',fgColor=NAVY if j<=14 else '8A6D2F');c.alignment=Alignment(wrap_text=True,vertical='center');c.border=bd
     s.column_dimensions[c.column_letter].width=Wd[j-1]
 for i,o in enumerate(W):
     r=5+i
-    vals=[i+1,o['tier'],due(i,o),o['name'],o['provider'],o['type'],o['town'],o['pc'],o['miles'],o['phone'] or 'Not listed: use website',o['email'] or 'Ask on the call',o['web'],o['url'],o['why'],'','','',None,'','']
+    vals=[i+1,o['tier'],due(i,o),o['name'],o['provider'],o['type'],o['town'],o['pc'],o['miles'],o['phone'] or 'Not listed: use website',o['email'] or 'Ask on the call',o['web'],o['url'],o['why']+('. No Registered Manager listed on CQC: lead with manager recruitment' if o.get('norm') else ''),'','','',None,(o.get('contact','')+(' (Registered Manager)' if o.get('rm') and o.get('contact')==o.get('rm') else ' (Nominated Individual)' if o.get('contact') else '')),'']
     for j,v in enumerate(vals,1):
         c=s.cell(row=r,column=j,value=v);c.font=A();c.border=bd;c.alignment=Alignment(vertical='top',wrap_text=j in (4,5,14))
         if j==3:c.number_format='ddd DD/MM'

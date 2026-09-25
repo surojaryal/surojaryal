@@ -58,6 +58,7 @@ HAV.registers = [
     rule: "Do not supply where legal identity is unclear, terms are unsigned, safety information is withheld, payment risk is unacceptable or the client asks Haverton to bypass safer recruitment or worker rights.",
     list: ["Legal Entity", "Service Type", "Primary Contact", "Client Status", "Terms Signed", "Credit Limit", "Last Review"],
     status: "Client Status",
+    importKey: r => ((r["CQC Location ID / Note"] || "").match(/\b1-\d{5,}\b/) || [""])[0],
     fields: [
       ["Legal Entity", "text", { required: true }], ["Trading Name / Service", "text"], ["Service Type", "select", { list: "serviceType" }],
       ["CQC Regulated?", "select", { list: "yesNo" }], ["CQC Location ID / Note", "text", { hint: "Verify on the CQC website, not from client statements." }],
