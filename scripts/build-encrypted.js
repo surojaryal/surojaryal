@@ -46,5 +46,10 @@ fs.copyFileSync(path.join(root, "unlock", "unlock.js"), path.join(dist, "unlock.
 const unlockFonts = [["Playfair Display", 700, "playfair-display-latin-700-normal.woff2"], ["Manrope", 400, "manrope-latin-400-normal.woff2"], ["Manrope", 700, "manrope-latin-700-normal.woff2"]]
   .map(([fam, w, f]) => `@font-face { font-family: "${fam}"; src: url("${font(f)}") format("woff2"); font-weight: ${w}; font-display: swap; }`).join("\n    ");
 fs.writeFileSync(path.join(dist, "index.html"), read("unlock/index.html").replace("/*FONTS*/", () => unlockFonts));
-fs.writeFileSync(path.join(dist, "robots.txt"), "User-agent: *\nDisallow: /\n");
+/* Public candidate registration page (not encrypted: it holds no private data) */
+fs.mkdirSync(path.join(dist, "apply"));
+const connect = new URL(cloud.url).origin;
+fs.writeFileSync(path.join(dist, "apply", "index.html"), read("apply/index.html").replace("__CONNECT__", connect));
+["apply.js", "apply.css", "privacy.html"].forEach(f => fs.copyFileSync(path.join(root, "apply", f), path.join(dist, "apply", f)));
+fs.writeFileSync(path.join(dist, "robots.txt"), "User-agent: *\nAllow: /apply/\nDisallow: /\n");
 console.log(`dist/ built: ${(payload.data.length * 0.75 / 1024).toFixed(0)} KB encrypted payload`);

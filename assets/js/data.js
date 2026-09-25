@@ -48,6 +48,12 @@ HAV.lists = {
   auditArea: ["Candidate Files", "Right To Work", "DBS Eligibility", "References", "Consent", "Client Terms", "Assignments", "AWR", "Invoices", "Incidents", "Data Protection"]
 };
 
+/* ---------- Online CV database (public registration form options) ---------- */
+HAV.cvQuals = ["Care Certificate", "Level 2 Diploma in Adult Care (or NVQ 2)", "Level 3 Diploma in Adult Care (or NVQ 3)", "Level 4 or 5 Diploma in Leadership and Management",
+  "Registered Nurse (NMC)", "Medication administration trained", "Moving and handling trained", "Dementia care", "Learning disability or autism", "Mental health",
+  "Positive behaviour support", "End of life care", "Complex care (PEG, catheter, stoma)", "Supervising staff", "Care coordination or rotas", "CQC inspection experience"];
+HAV.cvRoles = ["Care Assistant", "Senior Care Assistant", "Support Worker", "Team Leader", "Field Care Supervisor", "Care Coordinator", "Deputy Manager", "Registered Manager", "Home Manager", "Quality Manager", "Compliance Manager", "Registered Nurse", "Clinical Lead", "Domestic or kitchen", "Other"];
+
 /* ---------- Register (CRM) definitions ---------- */
 /* type: text | date | number | money | pct | select | textarea | email | tel
    derived fields are computed and read only. */
@@ -85,7 +91,9 @@ HAV.registers = [
       ["Professional Registration Required", "select", { list: "yesNo" }], ["Registration Status", "select", { list: "checkStatus" }],
       ["References", "select", { list: "references" }], ["Employment History / Gaps", "select", { list: "history" }],
       ["Training / Competence", "select", { list: "checkStatus" }], ["Young Worker 16-17", "select", { list: "youngWorker" }],
-      ["Availability", "text"], ["Marketing / Contact Preference", "text"], ["Last Contact", "date"], ["Next Action Date", "date"], ["Retention Review Date", "date"]
+      ["Availability", "text"], ["Qualifications / Skills", "textarea"], ["Drives", "select", { list: "yesNo" }],
+      ["Application ID", "text", { hint: "Set when added from an online application." }], ["CV File", "text", { hint: "Stored privately in the CV database. Open it from the record page." }],
+      ["Marketing / Contact Preference", "text"], ["Last Contact", "date"], ["Next Action Date", "date"], ["Retention Review Date", "date"]
     ]
   },
   {

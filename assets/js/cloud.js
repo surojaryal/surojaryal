@@ -91,5 +91,24 @@
     }
   }
 
-  window.HAVCloud = { enabled, config: CFG, readSession, session, signIn, signOut, requestReset, sessionFromUrl, setPassword, getUser, api, all };
+  /* Private CV storage (bucket "cvs"). Only signed-in members can open or delete files. */
+  async function storage(method, path, body) {
+    let s = await session();
+    if (!s) { const e = new Error("Not signed in"); e.status = 401; throw e; }
+    const go = tok => fetch(CFG.url + "/storage/v1/" + path, { method, headers: { apikey: CFG.key, Authorization: "Bearer " + tok, "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
+    let r = await go(s.access_token);
+    if (r.status === 401) { s = await refresh(s); r = await go(s.access_token); }
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(j.message || j.error || ("Storage request failed (" + r.status + ")")); e.status = r.status; throw e; }
+    return j;
+  }
+  const encPath = p => String(p).split("/").map(encodeURIComponent).join("/");
+  async function cvLink(path) {
+    const j = await storage("POST", "object/sign/cvs/" + encPath(path), { expiresIn: 300 });
+    const u = j.signedURL || j.signedUrl || "";
+    return /^https?:/.test(u) ? u : CFG.url + "/storage/v1" + (u.startsWith("/") ? "" : "/") + u;
+  }
+  async function cvDelete(path) { await storage("DELETE", "object/cvs", { prefixes: [path] }); }
+
+  window.HAVCloud = { enabled, config: CFG, readSession, session, signIn, signOut, requestReset, sessionFromUrl, setPassword, getUser, api, all, cvLink, cvDelete };
 })();

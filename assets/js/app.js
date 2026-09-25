@@ -267,7 +267,7 @@
   /* ---------------- UI chrome ---------------- */
   const NAV = [
     ["Overview", [["#/", "Dashboard"], ["#/actions", "Action Plan"], ["#/pipeline", "Pipeline Board"], ["#/reports", "Reports"], ["#/golive", "Temp Go Live Gate"], ["#/controls", "Controls And Authority"]]],
-    ["Registers", HAV.registers.filter(r => r.nav !== false).map(r => ["#/r/" + r.key, r.title, r.temp])],
+    ["Registers", (l => { l.splice(2, 0, ["#/applications", "CV Database"]); return l; })(HAV.registers.filter(r => r.nav !== false).map(r => ["#/r/" + r.key, r.title, r.temp]))],
     ["Operating System", [["#/procedures", "Procedures (SOPs)"], ["#/strategy", "Strategy And Services"], ["#/sales", "Sales And Candidates"], ["#/kpis", "KPIs And Governance"], ["#/risks", "Risk Register"], ["#/plan", "90 Day And 12 Month Plan"]]],
     ["Finance", [["#/finance", "Financial Model"], ["#/calculators", "Pricing Calculators"]]],
     ["Reference", [["#/sources", "Legal And Source Register"], ["#/data", "Data, Backup And Privacy"]]]
@@ -594,7 +594,7 @@
       .sort((a, b) => b.ts.localeCompare(a.ts));
     return `<p class="crumb"><a href="#/r/${key}">${esc(reg.title)}</a> / ${esc(id)}</p>` +
       `<header class="page-head"><h1>${esc(recLabel(key, rec) || id)} ${badge(statusV)}</h1><p>${esc(reg.title.replace(/s$/, ""))} record <code>${esc(id)}</code>${rec.created ? " · created " + fmtDate(rec.created.slice(0, 10)) : ""}${rec.modified ? " · updated " + fmtDate(rec.modified.slice(0, 10)) : ""}</p></header>
-      <div class="btn-row"><button class="btn" id="v-edit">Edit</button><button class="btn ghost" id="v-note">Log activity</button><button class="btn ghost" id="v-fu">Add follow up</button></div>
+      <div class="btn-row"><button class="btn" id="v-edit">Edit</button><button class="btn ghost" id="v-note">Log activity</button><button class="btn ghost" id="v-fu">Add follow up</button>${CLOUD && rec["CV File"] ? `<button class="btn ghost" id="v-cv">Open CV</button>` : ""}</div>
       ${summary}
       <div class="grid2 view"><section class="card"><h2>Details</h2><dl class="kvs">${details}</dl></section>
       <div><section class="card"><h2>Linked Records</h2>${relHtml}</section>${matches}</div></div>
@@ -975,6 +975,123 @@
     });
     save(); route(); toast(`${todo.length} follow up(s) added`);
   }
+  /* ---------------- CV database: online applications (cloud only) ---------------- */
+  const APPS = { rows: null, error: "", f: { q: "", status: "active", role: "", quals: [], drives: false, area: "", work: "" } };
+  const APP_STATUS = ["New", "Reviewed", "Added", "Not suitable", "Withdrawn"];
+  function pageApplications() {
+    const intro = "Candidates who registered through your public page. Search the pool, open CVs securely, and add suitable people to Candidates.";
+    if (!CLOUD) return header("CV Database", intro) + callout("Sign in needed", "The CV database lives in the cloud. Sign in at operation.havertoncare.co.uk to use it.", "warn");
+    const link = "https://operation.havertoncare.co.uk/apply/";
+    return header("CV Database", intro) +
+      `<div class="card cv-share"><div><strong>Your registration page</strong><br><a href="${link}" target="_blank" rel="noopener">${link}</a><br><span class="muted small">Put this link in every advert, post and email signature. Add <code>?src=facebook</code> (or linkedin, indeed, referral) to see where people came from.</span></div><button class="btn ghost" id="cv-copy">Copy link</button></div>
+      <div id="apps"><p class="muted">Loading applications…</p></div>`;
+  }
+  async function loadApplications(force) {
+    const box = $("#apps"); if (!box) return;
+    if (!APPS.rows || force) {
+      try { APPS.rows = await HAVCloud.all("applications", "select=*&order=created_at.desc"); APPS.error = ""; }
+      catch (e) { APPS.rows = null; APPS.error = /applications|relation|schema cache|404/i.test(e.message) ? "The CV database is not switched on yet. Run supabase/cv-database.sql in the Supabase SQL Editor." : e.message; }
+    }
+    drawApplications();
+  }
+  function appMatches(a) {
+    const f = APPS.f;
+    if (f.status === "active" && !["New", "Reviewed"].includes(a.status)) return false;
+    if (f.status !== "active" && f.status !== "all" && a.status !== f.status) return false;
+    if (f.role && a.target_role !== f.role && !String(a.other_roles || "").includes(f.role)) return false;
+    if (f.quals.length && !f.quals.every(q => (a.quals || []).includes(q))) return false;
+    if (f.drives && !a.drives) return false;
+    if (f.work && a.work_type !== f.work && a.work_type !== "Both") return false;
+    if (f.area) { const pcs = f.area.toUpperCase().split(/[\s,]+/).filter(Boolean), pc = String(a.postcode || "").toUpperCase().replace(/\s+/g, ""); if (!pcs.some(p => pc.startsWith(p.replace(/\s+/g, "")))) return false; }
+    if (f.q) { const hay = [a.full_name, a.email, a.phone, a.postcode, a.target_role, a.other_roles, a.availability, a.about, (a.quals || []).join(" "), a.source].join(" ").toLowerCase(); if (!f.q.toLowerCase().split(/\s+/).every(w => hay.includes(w))) return false; }
+    return true;
+  }
+  function drawApplications() {
+    const box = $("#apps"); if (!box) return;
+    if (APPS.error) { box.innerHTML = callout("CV database unavailable", APPS.error, "warn"); return; }
+    const rows = APPS.rows || [], f = APPS.f, hits = rows.filter(appMatches);
+    const newN = rows.filter(a => a.status === "New").length;
+    const old = rows.filter(a => a.status !== "Added" && (Date.now() - new Date(a.created_at)) > 730 * 864e5).length;
+    const opt = (v, l, sel) => `<option value="${esc(v)}" ${sel ? "selected" : ""}>${esc(l)}</option>`;
+    box.innerHTML = `
+      <div class="tiles">${[["New applications", newN], ["In the pool", rows.filter(a => ["New", "Reviewed"].includes(a.status)).length], ["Added to Candidates", rows.filter(a => a.status === "Added").length], ["Matching your search", hits.length]].map(([l, n]) => `<div class="tile"><span class="tile-v">${n}</span><span class="tile-l">${l}</span></div>`).join("")}</div>
+      ${old ? callout("Retention review due", `${old} application(s) are over 2 years old and were never added to Candidates. Your privacy notice says these are deleted after 2 years unless the person asks to stay.`, "warn") : ""}
+      <div class="toolbar cv-filters">
+        <input type="search" id="aq" placeholder="Search name, skills, availability…" value="${esc(f.q)}" aria-label="Search applications">
+        <select id="ast" aria-label="Status">${opt("active", "New and reviewed", f.status === "active")}${opt("all", "All statuses", f.status === "all")}${APP_STATUS.map(s => opt(s, s, f.status === s)).join("")}</select>
+        <select id="arole" aria-label="Role"><option value="">Any role</option>${HAV.cvRoles.map(r => opt(r, r, f.role === r)).join("")}</select>
+        <select id="awork" aria-label="Work type"><option value="">Permanent or temporary</option>${["Permanent", "Temporary when available"].map(w => opt(w, w, f.work === w)).join("")}</select>
+        <input id="aarea" placeholder="Area, e.g. BR8, DA1, DA14" value="${esc(f.area)}" aria-label="Postcode areas">
+        <label class="chk"><input type="checkbox" id="adrv" ${f.drives ? "checked" : ""}> Drives</label>
+        <span class="spacer"></span><button class="btn ghost" id="arefresh">Refresh</button>
+      </div>
+      <details class="cv-qf" ${f.quals.length ? "open" : ""}><summary>Must have (${f.quals.length ? f.quals.length + " selected" : "any"})</summary><div class="chips">${HAV.cvQuals.map(q => `<label class="chip"><input type="checkbox" value="${esc(q)}" ${f.quals.includes(q) ? "checked" : ""}> ${esc(q)}</label>`).join("")}</div></details>
+      ${hits.length ? table(["Received", "Name", "Role", "Area", "Skills", "Drives", "Right to work", "Status", ""], hits.map(a => [
+        fmtDate(String(a.created_at).slice(0, 10)), `<button class="link rname" data-app="${esc(a.id)}">${esc(a.full_name)}</button>`, esc(a.target_role || ""), esc(String(a.postcode || "").toUpperCase().split(" ")[0]),
+        (a.quals || []).slice(0, 3).map(q => `<span class="badge n">${esc(q.replace(/ \(.*\)$/, ""))}</span>`).join(" ") + ((a.quals || []).length > 3 ? ` <span class="muted small">+${a.quals.length - 3}</span>` : ""),
+        a.drives ? "Yes" : "No", esc(a.right_to_work || ""), badge(a.status === "Added" ? "Complete" : a.status === "New" ? "Pending" : a.status === "Not suitable" || a.status === "Withdrawn" ? "Closed" : "Open").replace(/>[^<]*</, `>${esc(a.status)}<`),
+        `<button class="link" data-app="${esc(a.id)}">Open</button>`]), "reg") : `<div class="empty">${rows.length ? "No applications match these filters." : "No applications yet. Share your registration page link to start building your CV database."}</div>`}`;
+    const redraw = () => { f.q = $("#aq").value.trim(); f.status = $("#ast").value; f.role = $("#arole").value; f.work = $("#awork").value; f.area = $("#aarea").value.trim(); f.drives = $("#adrv").checked; f.quals = [...box.querySelectorAll(".cv-qf input:checked")].map(i => i.value); const pos = $("#aq").selectionStart, focus = document.activeElement && document.activeElement.id; drawApplications(); if (focus && $("#" + focus)) { $("#" + focus).focus(); if (focus === "aq") $("#aq").setSelectionRange(pos, pos); } };
+    ["#aq", "#aarea"].forEach(s => $(s).addEventListener("input", redraw));
+    ["#ast", "#arole", "#awork", "#adrv"].forEach(s => $(s).addEventListener("change", redraw));
+    box.querySelectorAll(".cv-qf input").forEach(i => i.addEventListener("change", redraw));
+    $("#arefresh").addEventListener("click", () => loadApplications(true));
+    box.querySelectorAll("[data-app]").forEach(b => b.addEventListener("click", () => openApplication(b.dataset.app)));
+  }
+  async function openCv(path) {
+    const w = window.open("about:blank", "_blank");
+    try { const u = await HAVCloud.cvLink(path); if (w) w.location = u; else location.href = u; }
+    catch (e) { if (w) w.close(); toast("Could not open CV: " + e.message); }
+  }
+  function openApplication(appId) {
+    const a = (APPS.rows || []).find(x => x.id === appId); if (!a) return;
+    const dlg = $("#dlg"), row = (k, v) => v || v === 0 ? `<dt>${esc(k)}</dt><dd>${v}</dd>` : "";
+    const cand = a.candidate_id && findRec("candidates", a.candidate_id);
+    dlg.innerHTML = `<div class="dlg-head"><h2>${esc(a.full_name)} · ${esc(a.target_role || "")}</h2><button type="button" class="x" data-close aria-label="Close">×</button></div>
+      <div class="dlg-body"><dl class="kvs">
+        ${row("Received", esc(new Date(a.created_at).toLocaleString("en-GB")))}${row("Status", esc(a.status) + (a.reviewed_by ? ` <span class="muted small">by ${esc(a.reviewed_by)}</span>` : ""))}
+        ${row("Email", `<a href="mailto:${esc(a.email)}">${esc(a.email)}</a>`)}${row("Phone", a.phone ? `<a href="tel:${esc(a.phone)}">${esc(a.phone)}</a>` : "")}${row("Postcode", esc(a.postcode || ""))}
+        ${row("Also interested in", esc(a.other_roles || ""))}${row("Work type", esc(a.work_type || ""))}${row("Availability", esc(a.availability || ""))}
+        ${row("Experience", a.experience_years != null ? esc(a.experience_years + " year(s)") : "")}${row("Drives", a.drives ? "Yes" : "No")}${row("Will travel", a.travel_miles != null ? esc(a.travel_miles + " miles") : "")}
+        ${row("Right to work (their answer)", esc(a.right_to_work || ""))}${row("Qualifications and skills", (a.quals || []).map(q => `<span class="badge n">${esc(q)}</span>`).join(" "))}
+        ${row("About them", esc(a.about || "").replace(/\n/g, "<br>"))}${row("Heard about us", esc(a.source || ""))}${row("Job alerts by email", a.marketing_consent ? "Yes, consented" : "No")}
+        ${row("Privacy notice seen", esc("Version " + a.privacy_version))}${row("Candidate record", cand ? `<a href="#/view/candidates/${encodeURIComponent(cand.id)}" data-close>${esc(cand.id)}</a>` : a.candidate_id ? esc(a.candidate_id) : "")}
+      </dl>
+      <label class="fld wide"><span>Review note (optional)</span><textarea id="anote" rows="2" maxlength="1000">${esc(a.review_note || "")}</textarea></label>
+      <p class="muted small">Right to work is the candidate's own answer, not a check. Collect identity, qualifications and two references before any introduction.</p></div>
+      <div class="dlg-foot">${a.cv_path ? `<button class="btn ghost" id="a-cv">Open CV</button>` : `<span class="muted small">No CV uploaded</span>`}
+        <button class="btn ghost danger" id="a-del" title="Delete the application and CV (for example on request)">Delete</button><span class="spacer"></span>
+        <select id="a-st" aria-label="Status">${APP_STATUS.filter(s => s !== "Added" || a.status === "Added").map(s => `<option ${s === a.status ? "selected" : ""}>${s}</option>`).join("")}</select>
+        <button class="btn ghost" id="a-save">Save</button>${a.status !== "Added" ? `<button class="btn" id="a-add">Add to Candidates</button>` : ""}</div>`;
+    dlg.showModal();
+    const patch = async body => { await HAVCloud.api("PATCH", `applications?id=eq.${encodeURIComponent(a.id)}`, body, { Prefer: "return=minimal" }); Object.assign(a, body); };
+    if (a.cv_path) $("#a-cv").addEventListener("click", () => openCv(a.cv_path));
+    $("#a-save").addEventListener("click", async () => {
+      try { await patch({ status: $("#a-st").value, review_note: $("#anote").value.trim() || null }); dlg.close(); drawApplications(); toast("Application updated"); } catch (e) { toast("Could not save: " + e.message); }
+    });
+    const add = $("#a-add"); if (add) add.addEventListener("click", async () => {
+      const dup = state.records.candidates.find(c => c["Email"] && String(c["Email"]).toLowerCase() === a.email);
+      if (dup && !confirm(`${dup.id} ${dup["Full Name"] || ""} already has this email address. Add a new candidate record anyway?`)) return;
+      const role = HAV.lists.role.includes(a.target_role) ? a.target_role : "Other";
+      const nid = newId("candidates"), due = new Date(Date.now() + 2 * 864e5);
+      state.records.candidates.push({ id: nid, created: new Date().toISOString(), "Full Name": a.full_name, "Email": a.email, "Phone": a.phone || "", "Postcode": String(a.postcode || "").toUpperCase(),
+        "Target Role": role, "Candidate Route": a.work_type === "Both" ? "Both" : a.work_type === "Temporary when available" ? "Temporary Supply" : "Permanent Introduction", "Current Stage": "New",
+        "Source Of Data": "Online application" + (a.source ? " (" + a.source + ")" : ""), "Privacy Notice Given": "Yes", "Privacy Notice Version / Date": `Version ${a.privacy_version}, online form ${String(a.created_at).slice(0, 10)}`,
+        "Consent To Represent": "No", "Availability": [a.availability, a.travel_miles != null ? `travels up to ${a.travel_miles} miles` : ""].filter(Boolean).join("; "),
+        "Qualifications / Skills": (a.quals || []).join("; ") + (a.experience_years != null ? `; ${a.experience_years} year(s) experience` : "") + (role === "Other" ? `; wants: ${a.target_role}` : ""),
+        "Drives": a.drives ? "Yes" : "No", "Application ID": a.id, "CV File": a.cv_path || "", "Marketing / Contact Preference": a.marketing_consent ? "Job alerts by email: consented" : "Contact about roles only",
+        "Last Contact": "", "Next Action Date": iso(due) });
+      logChange("candidates", nid, "created"); save();
+      try { await patch({ status: "Added", candidate_id: nid, review_note: $("#anote").value.trim() || null }); } catch (e) { toast("Candidate added, but the application status did not update: " + e.message); }
+      dlg.close(); location.hash = "#/view/candidates/" + encodeURIComponent(nid); toast(`Added as ${nid}. Next: screening call.`);
+    });
+    $("#a-del").addEventListener("click", async () => {
+      if (!confirm(`Permanently delete ${a.full_name}'s application${a.cv_path ? " and CV" : ""}? Use this when someone asks to be removed or the retention period has passed. It cannot be undone.`)) return;
+      try { if (a.cv_path) await HAVCloud.cvDelete(a.cv_path); await HAVCloud.api("DELETE", `applications?id=eq.${encodeURIComponent(a.id)}`, undefined, { Prefer: "return=minimal" });
+        APPS.rows = APPS.rows.filter(x => x.id !== a.id); dlg.close(); drawApplications(); toast("Application and CV deleted"); }
+      catch (e) { toast("Could not delete: " + e.message); }
+    });
+  }
   function exportICS() {
     const open = state.records.followups.filter(f => f["Status"] !== "Closed" && /^\d{4}-\d{2}-\d{2}$/.test(f["Due Date"] || ""));
     if (!open.length) { toast("No open follow ups with a due date"); return; }
@@ -1208,6 +1325,7 @@
       case "search": html = pageSearch(decodeURIComponent(parts.slice(1).join("/"))); break;
       case "reports": html = pageReports(); break;
       case "actions": html = pageActions(); break;
+      case "applications": html = pageApplications(); break;
       case "golive": html = pageGoLive(); break;
       case "controls": html = pageControls(); break;
       case "procedures": html = pageProcedures(parts[1]); break;
@@ -1252,12 +1370,17 @@
         rd.readAsText(file);
       });
     }
+    if (parts[0] === "applications" && CLOUD) {
+      loadApplications();
+      $("#cv-copy").addEventListener("click", async () => { try { await navigator.clipboard.writeText("https://operation.havertoncare.co.uk/apply/"); toast("Link copied"); } catch (_) { toast("Copy failed: select the link and copy it"); } });
+    }
     if (parts[0] === "view") {
       const key = parts[1], id = decodeURIComponent(parts.slice(2).join("/")), rec = findRec(key, id);
       if (rec && CLOUD) loadServerHistory(key, id);
       if (rec) {
         $("#v-edit").addEventListener("click", () => openForm(key, id));
         $("#v-note").addEventListener("click", () => openActivity(key, id));
+        const vcv = $("#v-cv"); if (vcv) vcv.addEventListener("click", () => openCv(rec["CV File"]));
         $("#v-fu").addEventListener("click", () => openForm("followups", null, { "Type": ({ clients: "Client", candidates: "Candidate", vacancies: "Vacancy", placements: "Placement", assignments: "Assignment" })[key] || "Internal", "Related ID": id, "Organisation / Candidate": recLabel(key, rec), "Status": "Open", "Owner": state.lastBy || "" }));
       }
     }

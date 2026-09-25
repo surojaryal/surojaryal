@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src __CONNECT__; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Register for Care Jobs | Haverton Recruitment And Staffing</title>
+<meta name="description" content="Register with Haverton Recruitment for permanent care jobs with CQC-registered providers in Swanley, Dartford, Bexley, Bromley and West Kent. No fees for candidates.">
+<link rel="stylesheet" href="apply.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="mark">H</span><span><strong>Haverton Recruitment And Staffing</strong><small>A trading name of Haverton Care Limited</small></span></div>
+  </div>
+</header>
+<main class="wrap">
+  <section class="hero">
+    <h1>Register for care jobs near you</h1>
+    <p>We find permanent roles for care workers, senior carers, nurses and managers with CQC-registered care providers around Swanley, Dartford, Bexley, Bromley and West Kent.</p>
+    <ul class="promise">
+      <li><strong>No fees, ever.</strong> We never charge candidates.</li>
+      <li><strong>Your CV stays private.</strong> We only send it to an employer after you agree to that specific role.</li>
+      <li><strong>Honest advice</strong> from a former CQC Registered Manager who started as a care worker.</li>
+    </ul>
+    <p class="note">This is a registration form, not an application for one specific job. When an employer gives us a vacancy that suits you, we will contact you. Temporary shifts are not available yet.</p>
+  </section>
+
+  <form id="apply" class="card" novalidate>
+    <h2>1. About you</h2>
+    <div class="grid">
+      <label>Full name *<input name="full_name" required maxlength="120" autocomplete="name"></label>
+      <label>Email *<input name="email" type="email" required maxlength="200" autocomplete="email"></label>
+      <label>Mobile<input name="phone" type="tel" maxlength="40" autocomplete="tel"></label>
+      <label>Postcode *<input name="postcode" required maxlength="10" autocomplete="postal-code" placeholder="For example BR8 7AA"></label>
+    </div>
+
+    <h2>2. The work you want</h2>
+    <div class="grid">
+      <label>Main role *<select name="target_role" required id="role"><option value="">Choose a role</option></select></label>
+      <label>Other roles you would consider<input name="other_roles" maxlength="200" placeholder="For example Team Leader"></label>
+      <label>Type of work *<select name="work_type" required><option value="">Choose</option><option>Permanent</option><option>Temporary when available</option><option>Both</option></select></label>
+      <label>How far will you travel?<select name="travel_miles"><option value="">Choose</option><option value="5">Up to 5 miles</option><option value="10">Up to 10 miles</option><option value="15">Up to 15 miles</option><option value="25">Up to 25 miles</option></select></label>
+      <label>Years of care experience<input name="experience_years" type="number" min="0" max="60" inputmode="numeric"></label>
+      <label>Do you drive, with a car you can use for work?<select name="drives"><option value="">Choose</option><option value="true">Yes</option><option value="false">No</option></select></label>
+    </div>
+    <fieldset><legend>When can you work?</legend><div class="chips" id="avail"></div></fieldset>
+    <fieldset><legend>Qualifications and experience (tick all that apply)</legend><div class="chips" id="quals"></div></fieldset>
+    <label class="full">Anything else you would like us to know<textarea name="about" maxlength="1500" rows="4" placeholder="For example the settings you enjoy, or when you can start. Please do not include health information."></textarea></label>
+
+    <h2>3. Right to work and CV</h2>
+    <div class="grid">
+      <label>Do you have the right to work in the UK? *<select name="right_to_work" required><option value="">Choose</option><option>Yes</option><option>No</option><option>Not sure</option></select><small>We do not need documents now. We do not provide visa sponsorship or immigration advice.</small></label>
+      <label>Upload your CV (PDF or Word, up to 5 MB)<input name="cv" type="file" id="cv" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"><small>No CV? You can still register and we will help you write one.</small></label>
+    </div>
+    <label class="full">How did you hear about us?<select name="source" id="source"><option value="">Choose</option><option>Facebook</option><option>LinkedIn</option><option>Indeed</option><option>Friend or colleague</option><option>College or training provider</option><option>Jobcentre</option><option>Other</option></select></label>
+    <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
+
+    <h2>4. Your information</h2>
+    <label class="tick"><input type="checkbox" name="privacy" required> I have read the <a href="privacy.html" target="_blank" rel="noopener">Recruitment Privacy Notice</a>, which explains how Haverton Care Limited uses my information. *</label>
+    <label class="tick"><input type="checkbox" name="marketing_consent"> Email me about suitable new jobs (optional; you can stop these at any time)</label>
+    <p class="muted">Please do not send health details, bank details or copies of DBS certificates.</p>
+
+    <p class="err" id="err" role="alert" aria-live="assertive"></p>
+    <button class="btn" type="submit" id="send">Register</button>
+  </form>
+
+  <section class="card done" id="done" hidden>
+    <h2>Thank you, you are registered</h2>
+    <p>We will be in touch within 3 working days for a short, friendly chat about the work you want.</p>
+    <p>If you need us sooner, call <a href="tel:+441322879778">01322 879778</a> or email <a href="mailto:info@havertoncare.co.uk">info@havertoncare.co.uk</a>.</p>
+  </section>
+</main>
+<footer class="wrap foot">
+  <p>Haverton Recruitment And Staffing is a trading name of Haverton Care Limited, registered in England and Wales, company number 17025493. Registered office: 128 City Road, London, EC1V 2NX. For permanent recruitment we act as an employment agency. We do not guarantee job offers or placements.</p>
+  <p><a href="privacy.html">Recruitment Privacy Notice</a></p>
+</footer>
+<script src="../cloud-config.js"></script>
+<script src="apply.js"></script>
+</body>
+</html>
