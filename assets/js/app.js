@@ -405,6 +405,7 @@
         ${reg.typeFilter ? (() => { const n = {}; rows.forEach(r => { const t = r[reg.typeFilter]; if (t) n[t] = (n[t] || 0) + 1; }); return `<select id="tf" aria-label="Filter by service type"><option value="">All service types</option>${Object.keys(n).sort().map(t => `<option value="${esc(t)}">${esc((SERVICE_TAG[t] || [t])[0])} (${n[t]})</option>`).join("")}</select>`; })() : ""}
         <span class="spacer"></span>
         ${key === "followups" ? `<button class="btn ghost" id="ics" title="Download open follow ups as calendar events">Add to calendar</button>` : ""}
+        ${key === "followups" && HAV.weekOneFollowUps ? `<button class="btn ghost" id="fuload" title="Add this week's planned calls and reviews">Load week 1 follow ups</button>` : ""}
         ${key === "vacancies" && HAV.vacancyLeads ? `<button class="btn ghost" id="vleads" title="Add advertised vacancies from local providers as leads">Load vacancy leads</button>` : ""}
         ${key === "clients" && HAV.cqcProviders ? `<button class="btn ghost" id="cqcload" title="Add or refresh CQC-registered providers in your priority area">Load CQC providers</button>` : ""}
         <label class="btn ghost file ${locked ? "is-disabled" : ""}">Import CSV<input type="file" id="csvin" accept=".csv,text/csv" hidden ${locked ? "disabled" : ""}></label>
@@ -958,6 +959,22 @@
     });
     save(); route(); toast(`${newVac} vacancy lead(s) added`);
   }
+  /* Adds the planned week 1 calls, linked to the client by CQC location ID when it is in the CRM.
+     Safe to run again: an identical organisation, action and due date is never added twice. */
+  function loadWeekOneFollowUps() {
+    const cReg = regByKey("clients"), src = HAV.weekOneFollowUps;
+    const exists = x => state.records.followups.some(f => f["Organisation / Candidate"] === x.org && f["Action"] === x.action && f["Due Date"] === x.due);
+    const todo = src.items.filter(x => !exists(x));
+    if (!todo.length) { toast("Week 1 follow ups are already in the CRM"); return; }
+    if (!confirm(`Add ${todo.length} follow up(s) for ${src.label}?`)) return;
+    todo.forEach(x => {
+      const cl = x.cqc ? state.records.clients.find(r => cReg.importKey(r) === x.cqc) : null;
+      const id = newId("followups");
+      state.records.followups.push({ id, created: new Date().toISOString(), "Type": x.type || "Client", "Related ID": cl ? cl.id : "", "Organisation / Candidate": x.org, "Contact": x.contact, "Action": x.action, "Due Date": x.due, "Owner": "Suroj Aryal", "Status": "Open", "Next Action": x.next });
+      logChange("followups", id, "created");
+    });
+    save(); route(); toast(`${todo.length} follow up(s) added`);
+  }
   function exportICS() {
     const open = state.records.followups.filter(f => f["Status"] !== "Closed" && /^\d{4}-\d{2}-\d{2}$/.test(f["Due Date"] || ""));
     if (!open.length) { toast("No open follow ups with a due date"); return; }
@@ -1223,6 +1240,7 @@
       $("#csv").addEventListener("click", () => csvFor(key));
       const ics = $("#ics"); if (ics) ics.addEventListener("click", exportICS);
       const vl = $("#vleads"); if (vl) vl.addEventListener("click", loadVacancyLeads);
+      const fl = $("#fuload"); if (fl) fl.addEventListener("click", loadWeekOneFollowUps);
       const cqc = $("#cqcload"); if (cqc) cqc.addEventListener("click", () => {
         /* Safe to run again: matches on CQC location ID, refreshes contacts, never resets a client's status */
         try { const n = importCSV("clients", HAV.cqcProviders.csv, { keep: ["Client Status"] }); if (n) { route(); toast(`CQC providers loaded: ${n} added or refreshed`); } } catch (err) { toast("Load failed: " + err.message); }
