@@ -397,6 +397,7 @@
         <select id="sf" aria-label="Filter by status"><option value="">All statuses</option>${statuses.map(s => `<option>${esc(s)}</option>`).join("")}</select>
         <span class="spacer"></span>
         ${key === "followups" ? `<button class="btn ghost" id="ics" title="Download open follow ups as calendar events">Add to calendar</button>` : ""}
+        ${key === "vacancies" && HAV.vacancyLeads ? `<button class="btn ghost" id="vleads" title="Add advertised vacancies from local providers as leads">Load vacancy leads</button>` : ""}
         ${key === "clients" && HAV.cqcProviders ? `<button class="btn ghost" id="cqcload" title="Add or refresh CQC-registered providers in your priority area">Load CQC providers</button>` : ""}
         <label class="btn ghost file ${locked ? "is-disabled" : ""}">Import CSV<input type="file" id="csvin" accept=".csv,text/csv" hidden ${locked ? "disabled" : ""}></label>
         <button class="btn ghost" id="csv">Export CSV</button>
@@ -659,7 +660,7 @@
   const BOARDS = {
     submissions: { title: "Candidate Submissions", key: "submissions", field: "Stage", cols: ["Draft", "Submitted", "Interview", "Offer", "Placed", "Rejected", "Withdrawn"] },
     clients: { title: "Client Pipeline", key: "clients", field: "Client Status", cols: ["Lead", "Prospect", "Qualified", "Terms Sent", "Active Client", "Expansion", "Dormant", "Do Not Supply"] },
-    vacancies: { title: "Vacancies", key: "vacancies", field: "Vacancy Status", cols: ["Open", "On Hold", "Filled", "Closed"] }
+    vacancies: { title: "Vacancies", key: "vacancies", field: "Vacancy Status", cols: ["Lead (advert seen)", "Open", "On Hold", "Filled", "Closed"] }
   };
   function pagePipeline(which) {
     const b = BOARDS[which] || BOARDS.submissions, reg = regByKey(b.key);
@@ -927,6 +928,26 @@
     });
     save(); return recs.length;
   }
+  /* Adds advertised vacancies as leads, creating the client first if it is not in the CRM yet.
+     Safe to run again: clients match on CQC location ID, vacancies on their advert link. */
+  function loadVacancyLeads() {
+    const cReg = regByKey("clients"), vReg = regByKey("vacancies"), items = HAV.vacancyLeads.items;
+    const findClient = c => { const k = cReg.importKey(c); return (k && state.records.clients.find(r => cReg.importKey(r) === k)) || state.records.clients.find(r => r["Trading Name / Service"] === c["Trading Name / Service"]); };
+    const findVac = v => state.records.vacancies.find(r => vReg.importKey(r) === vReg.importKey(v));
+    const newVac = items.filter(x => !findVac(x.vac)).length;
+    const newCl = new Set(items.filter(x => !findClient(x.client)).map(x => x.client["Trading Name / Service"])).size;
+    if (!newVac) { toast("All vacancy leads are already in the CRM"); return; }
+    if (!confirm(`Add ${newVac} vacancy lead(s) seen on ${HAV.vacancyLeads.checked}${newCl ? ` and ${newCl} new client(s)` : ""}? They are marked "Lead (advert seen)" until the client signs terms.`)) return;
+    items.forEach(({ client, vac }) => {
+      if (findVac(vac)) return;
+      let cl = findClient(client);
+      if (!cl) { cl = Object.assign({ id: newId("clients"), created: new Date().toISOString() }, client); state.records.clients.push(cl); logChange("clients", cl.id, "created"); }
+      const id = newId("vacancies");
+      state.records.vacancies.push(Object.assign({ id, created: new Date().toISOString(), "Client ID": cl.id }, vac));
+      logChange("vacancies", id, "created");
+    });
+    save(); route(); toast(`${newVac} vacancy lead(s) added`);
+  }
   function exportICS() {
     const open = state.records.followups.filter(f => f["Status"] !== "Closed" && /^\d{4}-\d{2}-\d{2}$/.test(f["Due Date"] || ""));
     if (!open.length) { toast("No open follow ups with a due date"); return; }
@@ -1190,6 +1211,7 @@
       $("#add").addEventListener("click", () => openForm(key));
       $("#csv").addEventListener("click", () => csvFor(key));
       const ics = $("#ics"); if (ics) ics.addEventListener("click", exportICS);
+      const vl = $("#vleads"); if (vl) vl.addEventListener("click", loadVacancyLeads);
       const cqc = $("#cqcload"); if (cqc) cqc.addEventListener("click", () => {
         /* Safe to run again: matches on CQC location ID, refreshes contacts, never resets a client's status */
         try { const n = importCSV("clients", HAV.cqcProviders.csv, { keep: ["Client Status"] }); if (n) { route(); toast(`CQC providers loaded: ${n} added or refreshed`); } } catch (err) { toast("Load failed: " + err.message); }

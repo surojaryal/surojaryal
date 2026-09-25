@@ -21,7 +21,7 @@ HAV.lists = {
   clientStatus: ["Lead", "Prospect", "Qualified", "Terms Sent", "Active Client", "Expansion", "Dormant", "Do Not Supply"],
   route: ["Permanent Introduction", "Temporary Supply", "Both"],
   candidateStage: ["New", "Screening", "Compliant", "Marketed", "Interview", "Offered", "Placed", "Inactive", "Do Not Contact"],
-  vacancyStatus: ["Open", "On Hold", "Filled", "Closed"],
+  vacancyStatus: ["Lead (advert seen)", "Open", "On Hold", "Filled", "Closed"],
   rag: ["Green", "Amber", "Red"],
   checkStatus: ["Not Required", "Pending", "Verified", "Expired", "Issue"],
   dbsStatus: ["Not Required", "Pending", "Clear", "Content Reviewed", "Update Service Verified", "Expired", "Issue"],
@@ -93,13 +93,15 @@ HAV.registers = [
     rule: "Pause the vacancy if the client refuses to provide material role or safety information or requests an unlawful selection criterion. No fake vacancies.",
     list: ["Job Title", "Client ID", "Service Offer", "Location", "Target Fill Date", "Vacancy Status", "Priority"],
     status: "Vacancy Status",
+    importKey: r => (r["Advert Link"] || "").trim(),
     fields: [
       ["Client ID", "ref", { ref: "clients", required: true }], ["Service", "text"], ["Service Type", "select", { list: "serviceType" }],
       ["Service Offer", "select", { list: "serviceOffer" }], ["Job Title", "text", { required: true }], ["Location", "text"],
       ["Salary / Charge Rate", "money"], ["Pay Rate If Temp", "money"], ["Hours / Pattern", "text"], ["Open Date", "date"], ["Target Fill Date", "date"],
       ["Required DBS", "select", { list: "dbsRequired" }], ["Required Registration", "text"], ["Required Training / Skills", "text"],
       ["Known H&S Risks Confirmed", "select", { list: "yesNo" }], ["Hiring Contact", "text"], ["Vacancy Status", "select", { list: "vacancyStatus", required: true }],
-      ["Priority", "select", { list: "priority" }], ["Recruiter", "text"], ["Fee % / GP Target", "text"], ["Notes", "textarea"]
+      ["Priority", "select", { list: "priority" }], ["Recruiter", "text"], ["Fee % / GP Target", "text"],
+      ["Advert Link", "text", { hint: "Where the client advertised the role. A lead only until terms are signed and the brief is complete." }], ["Notes", "textarea"]
     ]
   },
   {
