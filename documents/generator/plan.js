@@ -158,7 +158,8 @@ module.exports = (root) => [build(`${root}/2 Business Plan/Haverton Recruitment 
   H1("7. Legal and compliance"),
   P("The table shows what the law requires and what we do. **Legal requirement** means we must. **Good practice** means we choose to."),
   ...table(["Area", "Type", "What we do"], [
-    ["Employment Agencies Act 1973 and Conduct Regulations 2003", "Legal requirement", "Agree terms with clients (reg 16) and candidates (reg 14) before providing services; get vacancy details from clients (reg 18); check candidates (regs 19 to 22); keep records (reg 29); never charge candidates fees"],
+    ["Employment Agencies Act 1973 and Conduct Regulations 2003", "Legal requirement", "Tell candidates our service is free (reg 13); for temporary work, agree written terms with workers first (reg 14); get vacancy details from clients (reg 18); check candidates (regs 19 to 22); keep records (reg 29); never charge candidates fees"],
+    ["Signed client terms", "Commercial necessity (not a statutory requirement for permanent recruitment)", "Signed before we start searching, so our fee, guarantee and data rules are enforceable"],
     ["Fair Work Agency", "Legal requirement", "Keep inspection-ready records"],
     ["Right to work", "Legal requirement for the employer", "Clients check as employer; we check where we employ or supply workers"],
     ["UK GDPR and Data Protection Act 2018", "Legal requirement", "Privacy notice, lawful bases, retention schedule, security, rights requests, Data Protection Record, pay the ICO fee"],

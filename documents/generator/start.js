@@ -9,11 +9,12 @@ build(`${root}/1 Start Here/Read Me First.docx`, [
   ...table(["Folder", "Files", "Use it for"], [
     ["1 Start Here", "Read Me First, Action Plan, Action Plan Tracker (spreadsheet), Launch Checklist", "Knowing what to do, in order, and ticking it off"],
     ["2 Business Plan", "Haverton Recruitment Business Plan, Haverton Recruitment Forecast (spreadsheet)", "Strategy, targets, money, risks; showing banks, funders or partners"],
-    ["3 Legal", "Client Terms Of Business, Candidate Terms, Recruitment Privacy Notice, Data Protection Record, Insurance Broker Brief", "The documents the law requires before you place anyone. **Have a solicitor review the first three.**"],
+    ["3 Legal", "Client Terms Of Business, Candidate Terms, Recruitment Privacy Notice, Data Protection Record, Insurance Broker Brief", "The documents you need before you place anyone. **Have a solicitor review the first three.**"],
     ["4 Forms", "Candidate File Checklist, Candidate Registration Form, Consent To Represent, Client Vacancy Brief, Interview Scoring Sheet, Reference Request, Placement Check In Record", "Everyday recruitment work"],
     ["5 Sales", "Client Emails And Call Script, Fee Proposal Letter", "Winning clients"],
     ["6 Temporary Staffing Drafts", "Temporary Worker Terms, Client Terms For Temporary Supply, Assignment Confirmation, Go Live Checklist", "Getting ready for temporary staffing. **Not for use** until the Go Live Gate is signed."],
-    ["7 Launch Kit", "Target Providers (spreadsheet), Target Providers Import, Candidates Import Template, Job Adverts, Recruitment Page, Temporary Staffing Cash Flow (spreadsheet)", "Starting now: who to contact, adverts to post, website wording, and the cash you need for temporary staffing"]
+    ["7 Launch Kit", "Target Providers (spreadsheet), Target Providers Import, Candidates Import Template, Job Adverts, Recruitment Page, Temporary Staffing Cash Flow (spreadsheet)", "Starting now: who to contact, adverts to post, website wording, and the cash you need for temporary staffing"],
+    ["8 First Client", "This Week 20 Providers (spreadsheet), This Week Emails, First Client Playbook, Follow Ups Import", "Your first week of calls and emails, and every step from first call to first paid invoice"]
   ], [2, 4, 4]),
   H1("Track your progress in three ways"),
   ...bullets([
@@ -64,8 +65,8 @@ build(`${root}/1 Start Here/Launch Checklist.docx`, [
   ...titleBlock("Launch Checklist", "Tick each item when it is done and evidenced"),
   H1("Before the first permanent placement"),
   ...table(["Item", "Why", "Done", "Date"], [
-    ["Client Terms Of Business reviewed by solicitor", "Legal requirement: terms agreed with clients before services (Conduct Regulations reg 16)", "☐", ""],
-    ["Candidate Terms reviewed and in use", "Legal requirement: terms agreed with candidates (reg 14)", "☐", ""],
+    ["Client Terms Of Business reviewed by solicitor", "Commercial necessity: makes your fee and guarantee enforceable (no statutory rule for permanent recruitment since 2016)", "☐", ""],
+    ["Candidate Terms reviewed and in use", "Legal requirement: tell candidates the service is free (Conduct Regulations reg 13). Written worker terms are required for temporary work (reg 14)", "☐", ""],
     ["Recruitment Privacy Notice published", "Legal requirement: UK GDPR articles 13 and 14", "☐", ""],
     ["ICO data protection fee paid; number added to privacy notice", "Legal requirement for most organisations", "☐", ""],
     ["Supabase data processing agreement accepted", "Legal requirement: UK GDPR article 28", "☐", ""],
