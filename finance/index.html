@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Haverton Care Finance Tool</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{--navy:#1b2b45;--navy2:#24365a;--gold:#b8914a;--gold-soft:#e6cf98;--bg:#f8f6f1;--ink:#2b3440;--muted:#5d6773;--line:#e2dccf;--green:#1f5a33;--red:#9c1c1c;--paper:#fff}
+  *{box-sizing:border-box;margin:0}
+  body{font:16px/1.55 Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg)}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 16px}
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif;color:var(--navy);line-height:1.2}
+  header.top{background:radial-gradient(120% 140% at 90% 0%,var(--navy2),var(--navy) 60%,#132036);color:#fff;border-bottom:4px solid var(--gold);padding:26px 0}
+  header .brand{display:flex;align-items:center;gap:14px}
+  header .mark{width:48px;height:48px;border-radius:11px;background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:var(--navy);display:grid;place-items:center;font:700 28px Georgia,serif;flex:none}
+  header h1{color:#fff;font-size:26px}
+  header .sub{color:var(--gold-soft);font-size:13px;letter-spacing:3px;text-transform:uppercase;margin-top:3px}
+  header a.back{color:var(--gold-soft);font-size:14px;text-decoration:none;margin-left:auto}
+  nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);display:flex;gap:4px;overflow-x:auto}
+  nav.tabs button{font:600 15px Arial;background:none;border:0;border-bottom:3px solid transparent;padding:14px 16px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  nav.tabs button.on{color:var(--navy);border-bottom-color:var(--gold)}
+  section.panel{display:none;padding:26px 0 60px}
+  section.panel.on{display:block}
+  h2{font-size:26px;margin-bottom:6px}
+  .lead{color:var(--muted);margin-bottom:22px;max-width:70ch}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:22px;box-shadow:0 1px 3px rgba(27,43,69,.06)}
+  .card h3{font-size:19px;margin-bottom:14px}
+  label.f{display:block;margin-bottom:14px;font-weight:600;font-size:14px}
+  label.f small{display:block;font-weight:400;color:var(--muted);margin-top:2px}
+  .inp{display:flex;align-items:center;gap:0;margin-top:6px}
+  .inp .pre{background:#f3efe6;border:1px solid #cfc7b7;border-right:0;border-radius:8px 0 0 8px;padding:10px 12px;color:var(--muted)}
+  input[type=number]{font:inherit;font-weight:400;padding:10px 12px;border:1px solid #cfc7b7;border-radius:8px;width:100%}
+  .inp input{border-radius:0 8px 8px 0}
+  input:focus{outline:3px solid rgba(184,145,74,.35);border-color:var(--gold)}
+  .out{background:var(--navy);color:#fff;border-radius:12px;padding:22px}
+  .out h3{color:var(--gold-soft);font-size:14px;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;font-family:Arial}
+  .row{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.12);gap:12px}
+  .row:last-child{border-bottom:0}
+  .row .k{color:#cfd6e2;font-size:15px}
+  .row .v{font:700 20px Georgia,serif;font-variant-numeric:tabular-nums}
+  .row.big .v{font-size:30px;color:var(--gold-soft)}
+  .flag{margin-top:14px;padding:10px 14px;border-radius:8px;font-size:14px;font-weight:600}
+  .flag.ok{background:#e3f1e6;color:var(--green)}
+  .flag.bad{background:#f8d7d3;color:var(--red)}
+  table{width:100%;border-collapse:collapse;background:var(--paper);font-size:15px;margin:6px 0 16px}
+  th,td{text-align:left;padding:9px 11px;border:1px solid var(--line);vertical-align:top}
+  th{background:#f3efe6;color:var(--navy)}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .note{background:#fbf6ea;border-left:4px solid var(--gold);padding:12px 16px;border-radius:4px;font-size:14px;margin:14px 0}
+  .panel h3.sub{font-size:20px;margin:26px 0 8px}
+  ul{margin:0 0 14px 1.1em}li{margin-bottom:5px}
+  footer{border-top:1px solid var(--line);padding:22px 0 50px;color:var(--muted);font-size:13px}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:#eef2f7;color:var(--navy);margin-left:8px}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap brand">
+  <div class="mark">H</div>
+  <div><h1>Finance Tool</h1><div class="sub">Haverton Care Limited</div></div>
+  <a class="back" href="https://operation.havertoncare.co.uk">← Operations</a>
+</div></header>
+
+<nav class="tabs wrap" style="max-width:1000px">
+  <button class="on" data-t="calc">Staff cost calculator</button>
+  <button data-t="pay">Pay rates 2026/27</button>
+  <button data-t="tax">Tax &amp; payroll setup</button>
+  <button data-t="check">Setup checklist</button>
+</nav>
+
+<main class="wrap">
+
+<section class="panel on" id="calc">
+  <h2>What one care hour really costs</h2>
+  <p class="lead">The wage is only part of the cost. Add holiday pay, employer National Insurance, pension, and paid travel and training, and you get the true cost of a billable hour. Your charge rate must sit above it. Change the figures in the boxes; everything updates live.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Your figures</h3>
+      <label class="f">Pay rate per hour worked
+        <small>What you pay the carer. Must be at least the National Living Wage (£12.71 for 21+).</small>
+        <div class="inp"><span class="pre">£</span><input type="number" id="pay" value="13.00" step="0.10" min="0"></div>
+      </label>
+      <label class="f">Holiday pay
+        <small>12.07% is the usual figure for irregular-hours workers (5.6 weeks).</small>
+        <div class="inp"><input type="number" id="hol" value="12.07" step="0.1" min="0"><span class="pre" style="border:1px solid #cfc7b7;border-left:0;border-radius:0 8px 8px 0">%</span></div>
+      </label>
+      <label class="f">Employer National Insurance (blended)
+        <small>15% applies above £5,000/year. On modest pay the effective rate is lower; 10% is a cautious planning figure. The Employment Allowance can offset much of it early on.</small>
+        <div class="inp"><input type="number" id="ni" value="10" step="0.5" min="0"><span class="pre" style="border:1px solid #cfc7b7;border-left:0;border-radius:0 8px 8px 0">%</span></div>
+      </label>
+      <label class="f">Employer pension
+        <small>Auto-enrolment minimum is 3% of qualifying earnings.</small>
+        <div class="inp"><input type="number" id="pen" value="3" step="0.5" min="0"><span class="pre" style="border:1px solid #cfc7b7;border-left:0;border-radius:0 8px 8px 0">%</span></div>
+      </label>
+      <label class="f">Other cost per hour worked
+        <small>Paid travel and training time, DBS, PPE, payroll software, spread across billable hours.</small>
+        <div class="inp"><span class="pre">£</span><input type="number" id="oth" value="1.50" step="0.10" min="0"></div>
+      </label>
+      <label class="f">Target gross margin
+        <small>The gross profit you want in the charge rate, before overheads.</small>
+        <div class="inp"><input type="number" id="mar" value="25" step="1" min="0" max="90"><span class="pre" style="border:1px solid #cfc7b7;border-left:0;border-radius:0 8px 8px 0">%</span></div>
+      </label>
+    </div>
+    <div>
+      <div class="out">
+        <h3>The true cost of one hour</h3>
+        <div class="row"><span class="k">Base wage</span><span class="v" id="o_pay"></span></div>
+        <div class="row"><span class="k">+ Holiday pay</span><span class="v" id="o_hol"></span></div>
+        <div class="row"><span class="k">+ Employer NI</span><span class="v" id="o_ni"></span></div>
+        <div class="row"><span class="k">+ Pension</span><span class="v" id="o_pen"></span></div>
+        <div class="row"><span class="k">+ Other costs</span><span class="v" id="o_oth"></span></div>
+        <div class="row big"><span class="k">True cost per hour</span><span class="v" id="o_cost"></span></div>
+      </div>
+      <div class="out" style="margin-top:16px;background:linear-gradient(135deg,#24365a,#1b2b45)">
+        <h3>Charge rate you need</h3>
+        <div class="row big"><span class="k">Suggested charge rate (ex VAT)</span><span class="v" id="o_charge"></span></div>
+        <div class="row"><span class="k">Gross profit per hour</span><span class="v" id="o_gp"></span></div>
+        <div class="row"><span class="k">Gross margin</span><span class="v" id="o_gpc"></span></div>
+      </div>
+      <div id="flag"></div>
+      <p class="note" style="margin-top:16px">These are planning estimates to shape your pricing, not verified figures or regulated advice. Ask your accountant to confirm your own numbers, and check local council and private charge rates before you set prices.</p>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="pay">
+  <h2>Pay rates and benchmarks <span class="pill">2026/27</span></h2>
+  <p class="lead">The legal minimum from 1 April 2026, plus the voluntary benchmarks that help you keep good carers.</p>
+  <h3 class="sub">Legal minimum (National Minimum / Living Wage)</h3>
+  <table><thead><tr><th>Who</th><th class="n">Per hour</th></tr></thead><tbody>
+    <tr><td>21 and over (National Living Wage)</td><td class="n">£12.71</td></tr>
+    <tr><td>18 to 20</td><td class="n">£10.85</td></tr>
+    <tr><td>Under 18 and apprentices</td><td class="n">£8.00</td></tr>
+  </tbody></table>
+  <p class="note">This is a hard legal floor. You must also pay for <strong>all</strong> working time — travel between visits and paid training count. Paying the right hourly rate but not paying travel time can still breach the minimum wage, which HMRC actively investigates in home care.</p>
+  <h3 class="sub">Voluntary benchmarks (help retention)</h3>
+  <table><thead><tr><th>Benchmark</th><th class="n">Per hour</th></tr></thead><tbody>
+    <tr><td>Real Living Wage, UK (from April 2026)</td><td class="n">£13.45</td></tr>
+    <tr><td>Real Living Wage, London</td><td class="n">£14.80</td></tr>
+    <tr><td>Suggested Haverton daytime rate to compete</td><td class="n">£13–£14+</td></tr>
+    <tr><td>Mileage between community visits</td><td class="n">25–45p / mile</td></tr>
+  </tbody></table>
+  <p class="note"><strong>Coming:</strong> the adult social care <em>Fair Pay Agreement</em> (Employment Rights Act 2025) will set a sector pay floor, with the first agreement expected around 2028/29. No new rates are set yet — just budget for pay to rise. Confirm all figures against GOV.UK before quoting them.</p>
+</section>
+
+<section class="panel" id="tax">
+  <h2>Tax and payroll, in plain English</h2>
+  <p class="lead">The general picture for a small care employer. This is guidance, not regulated accountancy advice — have an accountant set up payroll and confirm your figures. VAT and the Employment Allowance genuinely need their eyes on your numbers.</p>
+
+  <h3 class="sub">What you deduct from wages and send to HMRC</h3>
+  <ul>
+    <li><strong>Income tax (PAYE)</strong> on pay above the £12,570 personal allowance.</li>
+    <li><strong>Employee National Insurance.</strong></li>
+  </ul>
+  <p>These come out of the carer's wage, not yours. You collect and pass them to HMRC.</p>
+
+  <h3 class="sub">What you pay on top of wages (your cost)</h3>
+  <ul>
+    <li><strong>Employer NI:</strong> 15% on each person's earnings above £5,000 a year (£417/month).</li>
+    <li><strong>Employment Allowance:</strong> can cut your employer NI bill by up to <strong>£10,500</strong> a year. You need at least one employee (or a second director) paid above £5,000 — a sole-director company can't claim. Watch-point for your accountant: it can be restricted if most of your work is for the public sector (e.g. mostly council-funded packages).</li>
+    <li><strong>Under-21s and apprentices under 25</strong> attract no employer NI on most earnings.</li>
+    <li><strong>Workplace pension:</strong> once you employ staff you must enrol eligible workers (earnings trigger £10,000). Minimum 8% of qualifying earnings (£6,240–£50,270): employer at least 3%, employee 5%. NEST is free to set up.</li>
+  </ul>
+
+  <h3 class="sub">The company's own taxes</h3>
+  <ul>
+    <li><strong>Corporation Tax:</strong> 19% on profits up to £50,000, 25% above £250,000, with marginal relief between. Confirm current rates each year.</li>
+    <li><strong>VAT — the important one for your mixed business:</strong> regulated personal care by a CQC-registered provider is <strong>VAT exempt</strong>. But consultancy and training (Care Hub) are standard-rated at 20%. If that standard-rated turnover passes the <strong>£90,000</strong> threshold you must register, which brings "partial exemption" rules. You're likely below it now — ask an accountant when to register, and don't wait until you're already over.</li>
+    <li><strong>Filing:</strong> annual accounts and a Confirmation Statement to Companies House, and a Corporation Tax return to HMRC.</li>
+  </ul>
+  <p class="note">Do your own bookkeeping (Xero, QuickBooks or FreeAgent), but pay a small-practice accountant (~£500–£1,500/year) for the year-end accounts, Corporation Tax return and VAT timing. It's inexpensive and prevents costly mistakes.</p>
+</section>
+
+<section class="panel" id="check">
+  <h2>Employer setup checklist</h2>
+  <p class="lead">Most of this you can do yourself, in order. Tick each off as you go.</p>
+  <table><thead><tr><th>Step</th><th>Do it yourself?</th><th class="n">Cost</th></tr></thead><tbody>
+    <tr><td>Register as an employer with HMRC (before first payday)</td><td>Yes — free online form</td><td class="n">Free</td></tr>
+    <tr><td>Set up a workplace pension (NEST)</td><td>Yes — online</td><td class="n">Free</td></tr>
+    <tr><td>Claim the Employment Allowance</td><td>Yes — tick-box in payroll software</td><td class="n">Free</td></tr>
+    <tr><td>Run monthly payroll for a small team</td><td>Yes, with cloud software, or use a bureau</td><td class="n">£5–£15/mo</td></tr>
+    <tr><td>Day-to-day bookkeeping</td><td>Yes — Xero / QuickBooks / FreeAgent</td><td class="n">£12–£35/mo</td></tr>
+    <tr><td>Travel-time &amp; minimum-wage compliance check</td><td>Yes — a simple hours spreadsheet</td><td class="n">Free</td></tr>
+    <tr><td>Year-end accounts + Corporation Tax return</td><td>Use an accountant</td><td class="n">~£500–£1,500/yr</td></tr>
+    <tr><td>VAT advice and registration timing</td><td>Use an accountant</td><td class="n">Small extra</td></tr>
+  </tbody></table>
+  <div class="note"><strong>The golden rule for a care start-up:</strong> recruit to need, not ahead of it. Build a small pool of relief and part-time carers as real, funded hours come in. Salaried carers sitting idle drain cash fastest. And until CQC registration is granted, Haverton Home Care cannot deliver or invoice for regulated personal care.</div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  Haverton Care Limited, company number 17025493. Internal planning tool. Figures are 2026/27 planning estimates, not regulated financial, tax or legal advice; confirm against GOV.UK and with a qualified accountant before relying on them.
+</div></footer>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var gbp=function(n){return "£"+(n).toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2})};
+  var pc=function(n){return (n).toLocaleString("en-GB",{minimumFractionDigits:1,maximumFractionDigits:1})+"%"};
+  function num(id){var v=parseFloat($(id).value);return isNaN(v)?0:v}
+  function calc(){
+    var pay=num("pay"), hol=num("hol")/100, ni=num("ni")/100, pen=num("pen")/100, oth=num("oth"), mar=num("mar")/100;
+    var cHol=pay*hol, cNi=pay*ni, cPen=pay*pen;
+    var cost=pay+cHol+cNi+cPen+oth;
+    $("o_pay").textContent=gbp(pay);
+    $("o_hol").textContent=gbp(cHol);
+    $("o_ni").textContent=gbp(cNi);
+    $("o_pen").textContent=gbp(cPen);
+    $("o_oth").textContent=gbp(oth);
+    $("o_cost").textContent=gbp(cost);
+    var charge = mar>=1 ? cost : cost/(1-mar);
+    var gp=charge-cost, gpc=charge?gp/charge:0;
+    $("o_charge").textContent=gbp(charge);
+    $("o_gp").textContent=gbp(gp);
+    $("o_gpc").textContent=pc(gpc*100);
+    var f=$("flag");
+    if(pay<12.71){f.className="flag bad";f.textContent="⚠ Pay rate is below the National Living Wage (£12.71 for 21+). Remember travel and training time count too.";}
+    else if(gp<5.5||gpc<0.2){f.className="flag bad";f.textContent="⚠ Thin margin: gross profit is "+gbp(gp)+" per hour ("+pc(gpc*100)+"). Aim for at least £5.50 and 20%.";}
+    else {f.className="flag ok";f.textContent="✓ Meets a healthy floor: gross profit "+gbp(gp)+" per hour ("+pc(gpc*100)+").";}
+  }
+  ["pay","hol","ni","pen","oth","mar"].forEach(function(id){$(id).addEventListener("input",calc)});
+  calc();
+  var tabs=document.querySelectorAll("nav.tabs button"), panels=document.querySelectorAll("section.panel");
+  tabs.forEach(function(b){b.addEventListener("click",function(){
+    tabs.forEach(function(x){x.classList.remove("on")}); b.classList.add("on");
+    panels.forEach(function(p){p.classList.toggle("on",p.id===b.dataset.t)});
+    window.scrollTo(0,0);
+  })});
+})();
+</script>
+</body>
+</html>
