@@ -269,7 +269,7 @@
     ["Overview", [["#/", "Dashboard"], ["#/actions", "Action Plan"], ["#/pipeline", "Pipeline Board"], ["#/reports", "Reports"], ["#/golive", "Temp Go Live Gate"], ["#/controls", "Controls And Authority"]]],
     ["Registers", (l => { l.splice(2, 0, ["#/applications", "CV Database"]); return l; })(HAV.registers.filter(r => r.nav !== false).map(r => ["#/r/" + r.key, r.title, r.temp]))],
     ["Operating System", [["#/procedures", "Procedures (SOPs)"], ["#/strategy", "Strategy And Services"], ["#/sales", "Sales And Candidates"], ["#/kpis", "KPIs And Governance"], ["#/risks", "Risk Register"], ["#/plan", "90 Day And 12 Month Plan"]]],
-    ["Finance", [["#/finance", "Financial Model"], ["#/calculators", "Pricing Calculators"]]],
+    ["Finance", [["#/finance", "Financial Model"], ["#/calculators", "Pricing Calculators"], ["https://finance.havertoncare.co.uk", "Finance Tool ↗"]]],
     ["Reference", [["#/sources", "Legal And Source Register"], ["#/data", "Data, Backup And Privacy"]]]
   ];
   function renderNav() {
@@ -280,7 +280,8 @@
       items.map(([href, label, temp]) => {
         const active = cur === href || (href !== "#/" && cur.startsWith(href + "/")) || (viewKey && href === "#/r/" + viewKey);
         const lock = temp && !tempLive() ? `<span class="lock" title="Temporary staffing is off">off</span>` : "";
-        return `<a href="${href}" class="${active ? "active" : ""}">${esc(label)}${lock}</a>`;
+        const ext = /^https?:/.test(href);
+        return `<a href="${href}" class="${active ? "active" : ""}"${ext ? ` target="_blank" rel="noopener"` : ""}>${esc(label)}${lock}</a>`;
       }).join("") + `</div>`).join("");
     const so = $("#signout");
     if (so) so.addEventListener("click", async () => {
