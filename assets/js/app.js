@@ -278,6 +278,7 @@
       ["https://havertoncare.co.uk/future-home-care/", "Home Care ↗"],
       ["https://havertoncare.co.uk/careers/", "Careers ↗"],
       ["https://havertoncare.co.uk/recruitment/", "Recruitment ↗"],
+      ["https://havertoncare.co.uk/areas-we-cover/", "Areas We Cover ↗"],
       ["https://havertoncarehub.co.uk", "Haverton Care Hub ↗"],
       ["https://shop.havertoncarehub.co.uk", "Care Hub Shop ↗"]
     ]]
