@@ -1,0 +1,16 @@
+HAVERTON FINANCE TOOL
+
+Double-click "Haverton Finance Tool.html" to open it in your web browser.
+It works offline, on a computer or phone. Nothing you type is saved or sent anywhere.
+
+It has four tabs:
+1. Staff cost calculator - the true cost of one care hour, and the charge rate you need.
+2. Pay rates 2026/27 - legal minimums and benchmarks.
+3. Tax and payroll setup - PAYE, National Insurance, pension, Corporation Tax and VAT, in plain English.
+4. Setup checklist - what you can do yourself and what an accountant should handle.
+
+It is always available online, too, inside Haverton Operations:
+operation.havertoncare.co.uk/finance/  (or the "Finance Tool" link in the CRM sidebar).
+
+The figures are 2026/27 planning estimates, not regulated financial, tax or legal advice.
+Confirm them against GOV.UK and with a qualified accountant before relying on them.
