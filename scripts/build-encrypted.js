@@ -51,5 +51,7 @@ fs.mkdirSync(path.join(dist, "apply"));
 const connect = new URL(cloud.url).origin;
 fs.writeFileSync(path.join(dist, "apply", "index.html"), read("apply/index.html").replace("__CONNECT__", connect));
 ["apply.js", "apply.css", "privacy.html"].forEach(f => fs.copyFileSync(path.join(root, "apply", f), path.join(dist, "apply", f)));
+fs.mkdirSync(path.join(dist, "finance"));
+fs.copyFileSync(path.join(root, "finance", "index.html"), path.join(dist, "finance", "index.html"));
 fs.writeFileSync(path.join(dist, "robots.txt"), "User-agent: *\nAllow: /apply/\nDisallow: /\n");
 console.log(`dist/ built: ${(payload.data.length * 0.75 / 1024).toFixed(0)} KB encrypted payload`);

@@ -269,7 +269,7 @@
     ["Overview", [["#/", "Dashboard"], ["#/actions", "Action Plan"], ["#/pipeline", "Pipeline Board"], ["#/reports", "Reports"], ["#/golive", "Temp Go Live Gate"], ["#/controls", "Controls And Authority"]]],
     ["Registers", (l => { l.splice(2, 0, ["#/applications", "CV Database"]); return l; })(HAV.registers.filter(r => r.nav !== false).map(r => ["#/r/" + r.key, r.title, r.temp]))],
     ["Operating System", [["#/procedures", "Procedures (SOPs)"], ["#/strategy", "Strategy And Services"], ["#/sales", "Sales And Candidates"], ["#/kpis", "KPIs And Governance"], ["#/risks", "Risk Register"], ["#/plan", "90 Day And 12 Month Plan"]]],
-    ["Finance", [["#/finance", "Financial Model"], ["#/calculators", "Pricing Calculators"], ["https://finance.havertoncare.co.uk", "Finance Tool ↗"]]],
+    ["Finance", [["#/finance", "Financial Model"], ["#/calculators", "Pricing Calculators"], ["https://operation.havertoncare.co.uk/finance/", "Finance Tool ↗"]]],
     ["Reference", [["#/sources", "Legal And Source Register"], ["#/data", "Data, Backup And Privacy"]]]
   ];
   function renderNav() {
