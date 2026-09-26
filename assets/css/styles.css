@@ -66,6 +66,7 @@ code { font-size: .85em; background: var(--surface-2); padding: .1em .35em; bord
 .sideright .nav-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--gold); padding: 0 .6rem .3rem; font-weight: 700; }
 .sideright a { display: flex; justify-content: space-between; align-items: center; padding: .38rem .6rem; border-radius: 6px; color: #d9dfe9; text-decoration: none; font-size: .9rem; }
 .sideright a:hover { background: rgba(255, 255, 255, .07); color: #fff; }
+.sideright a.active { background: rgba(201, 165, 92, .16); color: var(--gold-2); font-weight: 600; }
 .sideright a:focus-visible { outline-color: var(--gold); }
 .foot { padding: 1rem clamp(1rem, 3vw, 2.25rem); border-top: 1px solid var(--line); color: var(--ink-2); font-size: .8rem; background: var(--surface); }
 

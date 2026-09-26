@@ -286,7 +286,7 @@
   function renderNav() {
     const cur = location.hash || "#/";
     const viewKey = (cur.match(/^#\/view\/([^/]+)/) || [])[1];
-    const RIGHT_GROUP = "Haverton Websites";
+    const RIGHT_GROUPS = ["Finance", "Reference", "Haverton Websites"];
     const renderGroup = ([g, items]) => `<div class="nav-group"><div class="nav-label">${esc(g)}</div>` +
       items.map(([href, label, temp]) => {
         const active = cur === href || (href !== "#/" && cur.startsWith(href + "/")) || (viewKey && href === "#/r/" + viewKey);
@@ -294,8 +294,8 @@
         const ext = /^https?:/.test(href);
         return `<a href="${href}" class="${active ? "active" : ""}"${ext ? ` target="_blank" rel="noopener"` : ""}>${esc(label)}${lock}</a>`;
       }).join("") + `</div>`;
-    $("#nav").innerHTML = (CLOUD ? `<div class="nav-account"><span title="Signed in">${esc(USER)}</span><span class="nav-acts"><button type="button" class="link" id="chpw">Password</button><button type="button" class="link" id="signout">Sign out</button></span></div>` : "") + `<form class="nav-search" id="navsearch" role="search"><input type="search" id="navq" placeholder="Search everything" aria-label="Search everything"></form>` + NAV.filter(gr => gr[0] !== RIGHT_GROUP).map(renderGroup).join("");
-    const sn = $("#sitenav"); if (sn) { const rg = NAV.find(gr => gr[0] === RIGHT_GROUP); sn.innerHTML = rg ? renderGroup(rg) : ""; }
+    $("#nav").innerHTML = (CLOUD ? `<div class="nav-account"><span title="Signed in">${esc(USER)}</span><span class="nav-acts"><button type="button" class="link" id="chpw">Password</button><button type="button" class="link" id="signout">Sign out</button></span></div>` : "") + `<form class="nav-search" id="navsearch" role="search"><input type="search" id="navq" placeholder="Search everything" aria-label="Search everything"></form>` + NAV.filter(gr => !RIGHT_GROUPS.includes(gr[0])).map(renderGroup).join("");
+    const sn = $("#sitenav"); if (sn) { sn.innerHTML = NAV.filter(gr => RIGHT_GROUPS.includes(gr[0])).map(renderGroup).join(""); }
     const so = $("#signout");
     if (so) so.addEventListener("click", async () => {
       if (Sync.status === "pending" || Sync.status === "saving" || Sync.status === "offline") {
