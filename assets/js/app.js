@@ -276,6 +276,8 @@
       ["https://operation.havertoncare.co.uk/finance/", "Finance Tool ↗"],
       ["https://operation.havertoncare.co.uk/care-costs/", "Family Cost Of Care Guide ↗"],
       ["https://havertoncare.co.uk/future-home-care/", "Home Care ↗"],
+      ["https://havertoncare.co.uk/careers/", "Careers ↗"],
+      ["https://havertoncare.co.uk/recruitment/", "Recruitment ↗"],
       ["https://havertoncarehub.co.uk", "Haverton Care Hub ↗"],
       ["https://shop.havertoncarehub.co.uk", "Care Hub Shop ↗"]
     ]]
