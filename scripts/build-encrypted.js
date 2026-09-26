@@ -53,5 +53,7 @@ fs.writeFileSync(path.join(dist, "apply", "index.html"), read("apply/index.html"
 ["apply.js", "apply.css", "privacy.html"].forEach(f => fs.copyFileSync(path.join(root, "apply", f), path.join(dist, "apply", f)));
 fs.mkdirSync(path.join(dist, "finance"));
 fs.copyFileSync(path.join(root, "finance", "index.html"), path.join(dist, "finance", "index.html"));
-fs.writeFileSync(path.join(dist, "robots.txt"), "User-agent: *\nAllow: /apply/\nDisallow: /\n");
+fs.mkdirSync(path.join(dist, "care-costs"));
+fs.copyFileSync(path.join(root, "care-costs", "index.html"), path.join(dist, "care-costs", "index.html"));
+fs.writeFileSync(path.join(dist, "robots.txt"), "User-agent: *\nAllow: /apply/\nAllow: /care-costs/\nDisallow: /\n");
 console.log(`dist/ built: ${(payload.data.length * 0.75 / 1024).toFixed(0)} KB encrypted payload`);
