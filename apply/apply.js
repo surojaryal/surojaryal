@@ -25,7 +25,7 @@
 
   form.addEventListener("submit", async e => {
     e.preventDefault(); err.textContent = "";
-    if (!CFG.url || !CFG.key) return fail("Registration is not available right now. Please email info@havertoncare.co.uk.");
+    if (!CFG.url || !CFG.key) return fail("Registration is not available right now. Please email recruitment@havertoncare.co.uk.");
     if (!form.reportValidity()) return;
     const fd = new FormData(form);
     if (fd.get("website")) { form.hidden = true; $("#done").hidden = false; return; } // likely a bot
@@ -48,7 +48,7 @@
         cvPath = `incoming/${id}.${ext.toLowerCase()}`;
         const type = ext.toLowerCase() === "pdf" ? "application/pdf" : ext.toLowerCase() === "doc" ? "application/msword" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
         const up = await fetch(`${CFG.url}/storage/v1/object/cvs/${cvPath}`, { method: "POST", headers: { apikey: CFG.key, "Content-Type": type, "x-upsert": "false" }, body: file });
-        if (!up.ok) throw new Error("We could not upload your CV. Please try again, or register without it and email it to info@havertoncare.co.uk.");
+        if (!up.ok) throw new Error("We could not upload your CV. Please try again, or register without it and email it to recruitment@havertoncare.co.uk.");
       }
       const num = v => (v === null || v === "" ? null : Number(v));
       const body = {
@@ -62,7 +62,7 @@
       const r = await fetch(`${CFG.url}/rest/v1/applications`, { method: "POST", headers: { apikey: CFG.key, "Content-Type": "application/json", "Content-Profile": "ops", Prefer: "return=minimal" }, body: JSON.stringify(body) });
       if (!r.ok) {
         const j = await r.json().catch(() => ({}));
-        throw new Error(/Too many|a lot of applications/.test(j.message || "") ? j.message : "Something went wrong. Please try again, or email info@havertoncare.co.uk.");
+        throw new Error(/Too many|a lot of applications/.test(j.message || "") ? j.message : "Something went wrong. Please try again, or email recruitment@havertoncare.co.uk.");
       }
       form.hidden = true; $("#done").hidden = false; window.scrollTo(0, 0);
     } catch (ex) { fail(ex.message); }
