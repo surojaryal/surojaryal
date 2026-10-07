@@ -300,12 +300,19 @@
       ["https://www.ziprecruiter.co.uk", "ZipRecruiter ↗"],
       ["https://www.carehome.co.uk/jobs", "Carehome.co.uk Jobs ↗"],
       ["https://www.socialcare.co.uk", "Socialcare.co.uk ↗"]
+    ]],
+    ["DBS Checks", [
+      ["https://www.gov.uk/dbs-update-service", "DBS Update Service ↗"],
+      ["https://secure.crbonline.gov.uk/crsc/check", "Check a DBS Certificate ↗"],
+      ["https://www.gov.uk/request-copy-criminal-record", "Apply for a Basic DBS ↗"],
+      ["https://www.gov.uk/guidance/dbs-check-requests-guidance-for-employers", "DBS Employer Guidance ↗"],
+      ["https://www.gov.uk/government/organisations/disclosure-and-barring-service", "DBS (Official) ↗"]
     ]]
   ];
   function renderNav() {
     const cur = location.hash || "#/";
     const viewKey = (cur.match(/^#\/view\/([^/]+)/) || [])[1];
-    const RIGHT_GROUPS = ["Finance", "Reference", "Haverton Websites", "Job Sites"];
+    const RIGHT_GROUPS = ["Finance", "Reference", "Haverton Websites", "Job Sites", "DBS Checks"];
     const renderGroup = ([g, items]) => `<div class="nav-group"><div class="nav-label">${esc(g)}</div>` +
       items.map(([href, label, temp]) => {
         const active = cur === href || (href !== "#/" && cur.startsWith(href + "/")) || (viewKey && href === "#/r/" + viewKey);
