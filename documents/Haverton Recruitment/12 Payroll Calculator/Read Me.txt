@@ -1,0 +1,26 @@
+HAVERTON PAYROLL CALCULATOR
+
+Double-click "Haverton Payroll Calculator.html" to open it in your web browser.
+It works offline, on a computer or phone. Nothing you type is saved or sent anywhere.
+
+It has four tabs:
+1. Pay run calculator - take-home pay for one worker (income tax, National Insurance,
+   pension and optional student loan) and what they cost you as the employer.
+   Enter an hourly rate or an annual salary; switch between weekly, monthly and yearly.
+2. Temp charge & margin - for temporary shifts: what you pay, your on-costs and the
+   rate you charge the client, giving your margin per hour.
+3. Rates 2026/27 - the minimum wage, tax bands, National Insurance, pension and
+   student loan thresholds the calculator uses.
+4. How to run payroll - the real steps: register as an employer, use HMRC-recognised
+   software to file RTI, payslips, pensions and the Employment Allowance.
+
+It is always available online, too, inside Haverton Operations:
+operation.havertoncare.co.uk/payroll/  (or the "Payroll Calculator" link in the CRM sidebar).
+
+IMPORTANT
+This is a planning estimator, not a payslip and not regulated advice. It annualises tax
+and National Insurance, so real payroll can differ by a few pounds; it uses the England
+and Northern Ireland tax bands. Thresholds (especially student loans) change each April.
+To actually pay staff you must run HMRC-recognised payroll software and file RTI - a
+spreadsheet cannot do this. Confirm every figure against GOV.UK and with a qualified
+accountant or payroll provider before relying on it.

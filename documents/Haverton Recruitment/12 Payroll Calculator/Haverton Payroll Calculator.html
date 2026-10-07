@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Haverton Care Payroll Calculator</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{--navy:#1b2b45;--navy2:#24365a;--gold:#b8914a;--gold-soft:#e6cf98;--bg:#f8f6f1;--ink:#2b3440;--muted:#5d6773;--line:#e2dccf;--green:#1f5a33;--red:#9c1c1c;--paper:#fff}
+  *{box-sizing:border-box;margin:0}
+  body{font:16px/1.55 Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg)}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 16px}
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif;color:var(--navy);line-height:1.2}
+  header.top{background:radial-gradient(120% 140% at 90% 0%,var(--navy2),var(--navy) 60%,#132036);color:#fff;border-bottom:4px solid var(--gold);padding:26px 0}
+  header .brand{display:flex;align-items:center;gap:14px}
+  header .mark{width:48px;height:48px;border-radius:11px;background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:var(--navy);display:grid;place-items:center;font:700 28px Georgia,serif;flex:none}
+  header h1{color:#fff;font-size:26px}
+  header .sub{color:var(--gold-soft);font-size:13px;letter-spacing:3px;text-transform:uppercase;margin-top:3px}
+  header a.back{color:var(--gold-soft);font-size:14px;text-decoration:none;margin-left:auto}
+  nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);display:flex;gap:4px;overflow-x:auto}
+  nav.tabs button{font:600 15px Arial;background:none;border:0;border-bottom:3px solid transparent;padding:14px 16px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  nav.tabs button.on{color:var(--navy);border-bottom-color:var(--gold)}
+  section.panel{display:none;padding:26px 0 60px}
+  section.panel.on{display:block}
+  h2{font-size:26px;margin-bottom:6px}
+  .lead{color:var(--muted);margin-bottom:22px;max-width:70ch}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:22px;box-shadow:0 1px 3px rgba(27,43,69,.06)}
+  .card h3{font-size:19px;margin-bottom:14px}
+  label.f{display:block;margin-bottom:14px;font-weight:600;font-size:14px}
+  label.f small{display:block;font-weight:400;color:var(--muted);margin-top:2px}
+  .inp{display:flex;align-items:center;gap:0;margin-top:6px}
+  .inp .pre{background:#f3efe6;border:1px solid #cfc7b7;border-right:0;border-radius:8px 0 0 8px;padding:10px 12px;color:var(--muted)}
+  .suf{border:1px solid #cfc7b7;border-left:0;border-radius:0 8px 8px 0;background:#f3efe6;padding:10px 12px;color:var(--muted)}
+  input[type=number]{font:inherit;font-weight:400;padding:10px 12px;border:1px solid #cfc7b7;border-radius:8px;width:100%}
+  select{font:inherit;padding:10px 12px;border:1px solid #cfc7b7;border-radius:8px;width:100%;background:#fff;margin-top:6px}
+  .inp input{border-radius:0 8px 8px 0}
+  .inp input.mid{border-radius:0}
+  input:focus,select:focus{outline:3px solid rgba(184,145,74,.35);border-color:var(--gold)}
+  .seg{display:flex;border:1px solid #cfc7b7;border-radius:8px;overflow:hidden;margin-top:6px}
+  .seg button{flex:1;font:600 14px Arial;background:#fff;border:0;padding:10px;color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--navy);color:#fff}
+  .out{background:var(--navy);color:#fff;border-radius:12px;padding:22px}
+  .out h3{color:var(--gold-soft);font-size:14px;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;font-family:Arial}
+  .row{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.12);gap:12px}
+  .row:last-child{border-bottom:0}
+  .row .k{color:#cfd6e2;font-size:15px}
+  .row .v{font:700 20px Georgia,serif;font-variant-numeric:tabular-nums}
+  .row.big .v{font-size:30px;color:var(--gold-soft)}
+  .row.sub .k,.row.sub .v{font-size:13px;color:#aeb8c7;font-weight:400}
+  .flag{margin-top:14px;padding:10px 14px;border-radius:8px;font-size:14px;font-weight:600}
+  .flag.ok{background:#e3f1e6;color:var(--green)}
+  .flag.bad{background:#f8d7d3;color:var(--red)}
+  table{width:100%;border-collapse:collapse;background:var(--paper);font-size:15px;margin:6px 0 16px}
+  th,td{text-align:left;padding:9px 11px;border:1px solid var(--line);vertical-align:top}
+  th{background:#f3efe6;color:var(--navy)}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .note{background:#fbf6ea;border-left:4px solid var(--gold);padding:12px 16px;border-radius:4px;font-size:14px;margin:14px 0}
+  .panel h3.sub{font-size:20px;margin:26px 0 8px}
+  ul{margin:0 0 14px 1.1em}li{margin-bottom:5px}
+  footer{border-top:1px solid var(--line);padding:22px 0 50px;color:var(--muted);font-size:13px}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:#eef2f7;color:var(--navy);margin-left:8px}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap brand">
+  <div class="mark">H</div>
+  <div><h1>Payroll Calculator</h1><div class="sub">Haverton Care Limited</div></div>
+  <a class="back" href="https://operation.havertoncare.co.uk">← Operations</a>
+</div></header>
+
+<nav class="tabs wrap" style="max-width:1000px">
+  <button class="on" data-t="run">Pay run calculator</button>
+  <button data-t="temp">Temp charge &amp; margin</button>
+  <button data-t="rates">Rates 2026/27</button>
+  <button data-t="run2">How to run payroll</button>
+</nav>
+
+<main class="wrap">
+
+<section class="panel on" id="run">
+  <h2>Gross to net pay</h2>
+  <p class="lead">Estimate take-home pay for one worker and what they cost you as the employer: income tax, National Insurance and pension. Enter a salary or an hourly rate; everything updates live. This is a planning estimate, not a payslip.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Pay</h3>
+      <div class="seg" id="mode"><button class="on" data-m="hr">Hourly</button><button data-m="yr">Annual salary</button></div>
+      <div id="hrBox">
+        <label class="f" style="margin-top:14px">Pay rate per hour
+          <small>At least the National Living Wage (£12.71 for 21+). Remember paid travel and training count as working time.</small>
+          <div class="inp"><span class="pre">£</span><input type="number" id="rate" value="13.00" step="0.10" min="0"></div>
+        </label>
+        <label class="f">Hours per week
+          <div class="inp"><input type="number" id="hrs" value="37.5" step="0.5" min="0"><span class="suf">hrs</span></div>
+        </label>
+      </div>
+      <div id="yrBox" style="display:none">
+        <label class="f" style="margin-top:14px">Annual gross salary
+          <div class="inp"><span class="pre">£</span><input type="number" id="salary" value="25000" step="100" min="0"></div>
+        </label>
+      </div>
+      <label class="f">Tax-free personal allowance
+        <small>Standard is £12,570 (tax code 1257L). Change only if the code differs.</small>
+        <div class="inp"><span class="pre">£</span><input type="number" id="pa" value="12570" step="10" min="0"></div>
+      </label>
+      <label class="f">Employee pension contribution
+        <small>Auto-enrolment minimum is 5% from the worker (on qualifying earnings).</small>
+        <div class="inp"><input type="number" id="eePen" value="5" step="0.5" min="0"><span class="suf">%</span></div>
+      </label>
+      <label class="f">Employer pension contribution
+        <small>Auto-enrolment minimum is 3% from you (on qualifying earnings).</small>
+        <div class="inp"><input type="number" id="erPen" value="3" step="0.5" min="0"><span class="suf">%</span></div>
+      </label>
+      <label class="f">Pension basis
+        <select id="penBasis">
+          <option value="band" selected>Qualifying earnings band (£6,240–£50,270)</option>
+          <option value="full">Full pay (whole salary)</option>
+          <option value="none">No pension</option>
+        </select>
+      </label>
+      <label class="f">Student loan
+        <select id="sl">
+          <option value="none" selected>None</option>
+          <option value="1">Plan 1 (9% over £26,065)</option>
+          <option value="2">Plan 2 (9% over £28,470)</option>
+          <option value="4">Plan 4 — Scotland (9% over £32,745)</option>
+          <option value="pg">Postgraduate (6% over £21,000)</option>
+        </select>
+      </label>
+      <label class="f">Show figures
+        <div class="seg" id="freq"><button data-p="12" class="on">Monthly</button><button data-p="52">Weekly</button><button data-p="1">Yearly</button></div>
+      </label>
+    </div>
+    <div>
+      <div class="out">
+        <h3>Take-home pay <span id="perLbl" style="color:#aeb8c7;letter-spacing:0;text-transform:none;font-weight:400">(per month)</span></h3>
+        <div class="row"><span class="k">Gross pay</span><span class="v" id="o_gross"></span></div>
+        <div class="row"><span class="k">− Income tax (PAYE)</span><span class="v" id="o_tax"></span></div>
+        <div class="row"><span class="k">− Employee NI</span><span class="v" id="o_eni"></span></div>
+        <div class="row"><span class="k">− Pension (employee)</span><span class="v" id="o_epen"></span></div>
+        <div class="row" id="slRow" style="display:none"><span class="k">− Student loan</span><span class="v" id="o_sl"></span></div>
+        <div class="row big"><span class="k">Net take-home</span><span class="v" id="o_net"></span></div>
+        <div class="row sub"><span class="k">Equivalent annual gross</span><span class="v" id="o_grossyr"></span></div>
+      </div>
+      <div class="out" style="margin-top:16px;background:linear-gradient(135deg,#24365a,#1b2b45)">
+        <h3>What it costs you (employer) <span id="perLbl2" style="color:#aeb8c7;letter-spacing:0;text-transform:none;font-weight:400">(per month)</span></h3>
+        <div class="row"><span class="k">Gross pay</span><span class="v" id="e_gross"></span></div>
+        <div class="row"><span class="k">+ Employer NI</span><span class="v" id="e_ni"></span></div>
+        <div class="row"><span class="k">+ Employer pension</span><span class="v" id="e_pen"></span></div>
+        <div class="row big"><span class="k">Total employer cost</span><span class="v" id="e_cost"></span></div>
+        <div class="row sub"><span class="k">Employer NI per year (before Employment Allowance)</span><span class="v" id="e_niyr"></span></div>
+      </div>
+      <div id="flag"></div>
+      <p class="note" style="margin-top:16px">Planning estimate only. It annualises tax and NI (real payroll calculates each payday and can differ slightly), assumes an England tax code with pension deducted after tax, and ignores salary sacrifice. The Employment Allowance can offset up to £10,500 of your employer NI across the year. Confirm every figure in your payroll software and with your accountant.</p>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="temp">
+  <h2>Temporary staffing: cost, charge and margin</h2>
+  <p class="lead">For temp shifts: enter what you pay the worker, your on-costs and the rate you charge the client, and see your margin per hour. Use it to price shifts before you commit.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Per hour worked</h3>
+      <label class="f">Pay rate to worker
+        <div class="inp"><span class="pre">£</span><input type="number" id="t_pay" value="13.00" step="0.10" min="0"></div>
+      </label>
+      <label class="f">Holiday pay
+        <small>12.07% is the usual figure for irregular-hours workers.</small>
+        <div class="inp"><input type="number" id="t_hol" value="12.07" step="0.1" min="0"><span class="suf">%</span></div>
+      </label>
+      <label class="f">Employer National Insurance
+        <small>15% above £5,000/year. On modest pay the effective rate is lower; 10% is a cautious planning figure.</small>
+        <div class="inp"><input type="number" id="t_ni" value="10" step="0.5" min="0"><span class="suf">%</span></div>
+      </label>
+      <label class="f">Employer pension
+        <div class="inp"><input type="number" id="t_pen" value="3" step="0.5" min="0"><span class="suf">%</span></div>
+      </label>
+      <label class="f">Other cost per hour
+        <small>Payroll, insurance, admin, DBS spread across hours.</small>
+        <div class="inp"><span class="pre">£</span><input type="number" id="t_oth" value="0.75" step="0.05" min="0"></div>
+      </label>
+      <label class="f">Charge rate to client (ex VAT)
+        <small>What you invoice the care provider per hour.</small>
+        <div class="inp"><span class="pre">£</span><input type="number" id="t_charge" value="18.50" step="0.10" min="0"></div>
+      </label>
+    </div>
+    <div>
+      <div class="out">
+        <h3>Your cost per hour</h3>
+        <div class="row"><span class="k">Pay rate</span><span class="v" id="to_pay"></span></div>
+        <div class="row"><span class="k">+ Holiday pay</span><span class="v" id="to_hol"></span></div>
+        <div class="row"><span class="k">+ Employer NI</span><span class="v" id="to_ni"></span></div>
+        <div class="row"><span class="k">+ Pension</span><span class="v" id="to_pen"></span></div>
+        <div class="row"><span class="k">+ Other</span><span class="v" id="to_oth"></span></div>
+        <div class="row big"><span class="k">True cost per hour</span><span class="v" id="to_cost"></span></div>
+      </div>
+      <div class="out" style="margin-top:16px;background:linear-gradient(135deg,#24365a,#1b2b45)">
+        <h3>Margin on this shift</h3>
+        <div class="row"><span class="k">Charge rate (ex VAT)</span><span class="v" id="to_charge"></span></div>
+        <div class="row big"><span class="k">Gross margin per hour</span><span class="v" id="to_gp"></span></div>
+        <div class="row"><span class="k">Margin %</span><span class="v" id="to_gpc"></span></div>
+        <div class="row sub"><span class="k">Mark-up on pay rate</span><span class="v" id="to_mu"></span></div>
+      </div>
+      <div id="tflag"></div>
+      <p class="note" style="margin-top:16px">Temporary staffing is a separate business line: before taking temp bookings you need payroll, insurance, right-to-work and DBS checks, and credit control in place. These are planning estimates, not advice. Supplying temporary staff you direct to deliver personal care may require its own regulatory steps — confirm before you launch.</p>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="rates">
+  <h2>Payroll rates and thresholds <span class="pill">2026/27</span></h2>
+  <p class="lead">The figures this calculator uses. Thresholds change each year and at fiscal events — confirm against GOV.UK before relying on them.</p>
+
+  <h3 class="sub">Minimum wage (from 1 April 2026)</h3>
+  <table><thead><tr><th>Who</th><th class="n">Per hour</th></tr></thead><tbody>
+    <tr><td>21 and over (National Living Wage)</td><td class="n">£12.71</td></tr>
+    <tr><td>18 to 20</td><td class="n">£10.85</td></tr>
+    <tr><td>Under 18 and apprentices</td><td class="n">£8.00</td></tr>
+  </tbody></table>
+
+  <h3 class="sub">Income tax (England &amp; Northern Ireland)</h3>
+  <table><thead><tr><th>Band</th><th>Taxable income</th><th class="n">Rate</th></tr></thead><tbody>
+    <tr><td>Personal allowance</td><td>Up to £12,570</td><td class="n">0%</td></tr>
+    <tr><td>Basic rate</td><td>£12,571 – £50,270</td><td class="n">20%</td></tr>
+    <tr><td>Higher rate</td><td>£50,271 – £125,140</td><td class="n">40%</td></tr>
+    <tr><td>Additional rate</td><td>Over £125,140</td><td class="n">45%</td></tr>
+  </tbody></table>
+  <p class="note">The personal allowance drops by £1 for every £2 earned over £100,000. Scotland has different income tax bands — this tool uses the England &amp; NI rates.</p>
+
+  <h3 class="sub">National Insurance (Class 1)</h3>
+  <table><thead><tr><th>Item</th><th class="n">Threshold / rate</th></tr></thead><tbody>
+    <tr><td>Employee NI — main rate</td><td class="n">8% (£12,570 – £50,270)</td></tr>
+    <tr><td>Employee NI — above upper limit</td><td class="n">2% (over £50,270)</td></tr>
+    <tr><td>Employer NI rate</td><td class="n">15%</td></tr>
+    <tr><td>Employer NI — secondary threshold</td><td class="n">£5,000 / year</td></tr>
+    <tr><td>Employment Allowance (per employer, per year)</td><td class="n">up to £10,500</td></tr>
+  </tbody></table>
+  <p class="note">Employers pay no NI on most earnings of under-21s and apprentices under 25. A sole-director company with no other staff cannot claim the Employment Allowance.</p>
+
+  <h3 class="sub">Workplace pension (auto-enrolment)</h3>
+  <table><thead><tr><th>Item</th><th class="n">2026/27</th></tr></thead><tbody>
+    <tr><td>Earnings trigger to enrol</td><td class="n">£10,000 / year</td></tr>
+    <tr><td>Qualifying earnings band</td><td class="n">£6,240 – £50,270</td></tr>
+    <tr><td>Minimum total contribution</td><td class="n">8%</td></tr>
+    <tr><td>Minimum employer share</td><td class="n">3%</td></tr>
+    <tr><td>Holiday pay (irregular hours)</td><td class="n">12.07%</td></tr>
+  </tbody></table>
+
+  <h3 class="sub">Student loan repayments</h3>
+  <table><thead><tr><th>Plan</th><th>Threshold</th><th class="n">Rate</th></tr></thead><tbody>
+    <tr><td>Plan 1</td><td>£26,065 / year</td><td class="n">9%</td></tr>
+    <tr><td>Plan 2</td><td>£28,470 / year</td><td class="n">9%</td></tr>
+    <tr><td>Plan 4 (Scotland)</td><td>£32,745 / year</td><td class="n">9%</td></tr>
+    <tr><td>Postgraduate loan</td><td>£21,000 / year</td><td class="n">6%</td></tr>
+  </tbody></table>
+  <p class="note">Student loan thresholds are reviewed every April. Check the current figures on GOV.UK before quoting a net pay to a worker.</p>
+</section>
+
+<section class="panel" id="run2">
+  <h2>Running real payroll</h2>
+  <p class="lead">This calculator estimates figures. To actually pay staff and stay legal, you report to HMRC in real time. Here is the short version.</p>
+  <ul>
+    <li><strong>Register as an employer</strong> with HMRC before the first payday (free, online). You get a PAYE reference.</li>
+    <li><strong>Use HMRC-recognised payroll software</strong> to run each pay run and send a <strong>Full Payment Submission (RTI)</strong> to HMRC on or before payday. Several packages are <strong>free for fewer than 10 employees</strong>; others cost £5–£15 a month. HMRC's own Basic PAYE Tools is free. A hand-built spreadsheet cannot file RTI.</li>
+    <li><strong>Give every worker a payslip</strong> showing gross, deductions and net.</li>
+    <li><strong>Pay HMRC</strong> the income tax and NI you deducted, plus your employer NI, monthly (or quarterly if small).</li>
+    <li><strong>Set up a workplace pension</strong> (NEST is free) and auto-enrol eligible staff; make the employer contributions.</li>
+    <li><strong>Claim the Employment Allowance</strong> if eligible — a tick-box in the software.</li>
+    <li><strong>Keep records</strong> for at least 3 years, and run minimum-wage checks that include paid travel and training time.</li>
+  </ul>
+  <div class="note"><strong>Founder tip:</strong> do the pay runs yourself in free or low-cost recognised software once the pattern is simple, but have a small-practice accountant or payroll bureau set it up and check the first few months. For temporary staffing, where you may be the employer of many short-term workers, a payroll bureau often earns its fee. This tool and page are general guidance, not regulated tax or payroll advice.</div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  Haverton Care Limited, company number 17025493. Internal planning tool. Figures are 2026/27 planning estimates, not regulated financial, tax or payroll advice; confirm against GOV.UK and with a qualified accountant or payroll provider before relying on them.
+</div></footer>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var gbp=function(n){return "£"+(n).toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2})};
+  var pc=function(n){return (n).toLocaleString("en-GB",{minimumFractionDigits:1,maximumFractionDigits:1})+"%"};
+  function num(id){var v=parseFloat($(id).value);return isNaN(v)?0:v}
+
+  var payMode="hr", periods=12;
+  var SL={ "1":{t:26065,r:0.09}, "2":{t:28470,r:0.09}, "4":{t:32745,r:0.09}, "pg":{t:21000,r:0.06} };
+
+  function annualTax(gross, pa){
+    // England & NI bands, applied to income above the personal allowance
+    var taper = gross>100000 ? (gross-100000)/2 : 0;
+    var paEff = Math.max(0, pa - taper);
+    var above = Math.max(0, gross - paEff);
+    var basicW = 37700;              // 12,571–50,270
+    var higherW = 125140 - 50270;    // 50,271–125,140
+    var t = Math.min(above, basicW)*0.20;
+    t += Math.min(Math.max(0, above-basicW), higherW)*0.40;
+    t += Math.max(0, above-basicW-higherW)*0.45;
+    return t;
+  }
+  function annualEeNI(gross){
+    var PT=12570, UEL=50270;
+    return Math.max(0, Math.min(gross,UEL)-PT)*0.08 + Math.max(0, gross-UEL)*0.02;
+  }
+  function annualErNI(gross){
+    return Math.max(0, gross-5000)*0.15;
+  }
+  function qualifying(gross){
+    return Math.max(0, Math.min(gross,50270)-6240);
+  }
+
+  function run(){
+    var gross = payMode==="hr" ? num("rate")*num("hrs")*52 : num("salary");
+    var pa = num("pa");
+    var basis = $("penBasis").value;
+    var penBase = basis==="full" ? gross : (basis==="band" ? qualifying(gross) : 0);
+    var eePen = basis==="none" ? 0 : penBase*num("eePen")/100;
+    var erPen = basis==="none" ? 0 : penBase*num("erPen")/100;
+    var tax = annualTax(gross, pa);
+    var eni = annualEeNI(gross);
+    var slv = $("sl").value, sl = 0;
+    if(SL[slv]) sl = Math.max(0, gross - SL[slv].t)*SL[slv].r;
+    var net = gross - tax - eni - eePen - sl;
+    var erni = annualErNI(gross);
+    var cost = gross + erni + erPen;
+    var d = periods;
+    $("o_gross").textContent=gbp(gross/d);
+    $("o_tax").textContent="−"+gbp(tax/d);
+    $("o_eni").textContent="−"+gbp(eni/d);
+    $("o_epen").textContent="−"+gbp(eePen/d);
+    $("o_sl").textContent="−"+gbp(sl/d);
+    $("slRow").style.display = SL[slv] ? "flex" : "none";
+    $("o_net").textContent=gbp(net/d);
+    $("o_grossyr").textContent=gbp(gross);
+    $("e_gross").textContent=gbp(gross/d);
+    $("e_ni").textContent="+"+gbp(erni/d);
+    $("e_pen").textContent="+"+gbp(erPen/d);
+    $("e_cost").textContent=gbp(cost/d);
+    $("e_niyr").textContent=gbp(erni);
+    var lbl = d===12?"(per month)":d===52?"(per week)":"(per year)";
+    $("perLbl").textContent=lbl; $("perLbl2").textContent=lbl;
+    var f=$("flag");
+    var hourly = payMode==="hr" ? num("rate") : (num("hrs")>0?0:0);
+    if(payMode==="hr" && num("rate")<12.71){f.className="flag bad";f.textContent="⚠ Pay rate is below the National Living Wage (£12.71 for 21+). Paid travel and training count towards it too.";}
+    else if(gross>0 && gross<10000){f.className="flag ok";f.textContent="ℹ Below the £10,000 auto-enrolment trigger — the worker can opt in but need not be enrolled automatically.";}
+    else {f.className="flag ok";f.textContent="✓ Figures calculated. Check them in your payroll software before payday.";}
+  }
+
+  function temp(){
+    var pay=num("t_pay"), hol=num("t_hol")/100, ni=num("t_ni")/100, pen=num("t_pen")/100, oth=num("t_oth"), charge=num("t_charge");
+    var cHol=pay*hol, cNi=pay*ni, cPen=pay*pen;
+    var cost=pay+cHol+cNi+cPen+oth;
+    $("to_pay").textContent=gbp(pay);
+    $("to_hol").textContent=gbp(cHol);
+    $("to_ni").textContent=gbp(cNi);
+    $("to_pen").textContent=gbp(cPen);
+    $("to_oth").textContent=gbp(oth);
+    $("to_cost").textContent=gbp(cost);
+    $("to_charge").textContent=gbp(charge);
+    var gp=charge-cost, gpc=charge?gp/charge:0, mu=pay?(charge-pay)/pay:0;
+    $("to_gp").textContent=gbp(gp);
+    $("to_gpc").textContent=pc(gpc*100);
+    $("to_mu").textContent=pc(mu*100);
+    var f=$("tflag");
+    if(pay<12.71){f.className="flag bad";f.textContent="⚠ Pay rate is below the National Living Wage (£12.71 for 21+).";}
+    else if(charge<=cost){f.className="flag bad";f.textContent="⚠ You would lose money: the charge rate is at or below your cost ("+gbp(cost)+"/hr).";}
+    else if(gp<2.5){f.className="flag bad";f.textContent="⚠ Thin margin: "+gbp(gp)+"/hr ("+pc(gpc*100)+"). Most temp desks aim higher to cover admin and bad debt.";}
+    else {f.className="flag ok";f.textContent="✓ Margin "+gbp(gp)+"/hr ("+pc(gpc*100)+") on a "+gbp(cost)+" cost.";}
+  }
+
+  // mode toggle
+  $("mode").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
+    payMode=b.dataset.m;
+    $("mode").querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b)});
+    $("hrBox").style.display = payMode==="hr"?"block":"none";
+    $("yrBox").style.display = payMode==="yr"?"block":"none";
+    run();
+  });
+  $("freq").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
+    periods=parseInt(b.dataset.p,10);
+    $("freq").querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b)});
+    run();
+  });
+  ["rate","hrs","salary","pa","eePen","erPen"].forEach(function(id){$(id).addEventListener("input",run)});
+  ["penBasis","sl"].forEach(function(id){$(id).addEventListener("change",run)});
+  ["t_pay","t_hol","t_ni","t_pen","t_oth","t_charge"].forEach(function(id){$(id).addEventListener("input",temp)});
+  run(); temp();
+
+  var tabs=document.querySelectorAll("nav.tabs button"), panels=document.querySelectorAll("section.panel");
+  tabs.forEach(function(b){b.addEventListener("click",function(){
+    tabs.forEach(function(x){x.classList.remove("on")}); b.classList.add("on");
+    panels.forEach(function(p){p.classList.toggle("on",p.id===b.dataset.t)});
+    window.scrollTo(0,0);
+  })});
+})();
+</script>
+</body>
+</html>
