@@ -281,12 +281,31 @@
       ["https://havertoncare.co.uk/areas-we-cover/", "Areas We Cover ↗"],
       ["https://havertoncarehub.co.uk", "Haverton Care Hub ↗"],
       ["https://shop.havertoncarehub.co.uk", "Care Hub Shop ↗"]
+    ]],
+    ["Job Sites", [
+      ["https://www.indeed.co.uk", "Indeed ↗"],
+      ["https://findajob.dwp.gov.uk", "Find a Job (DWP) ↗"],
+      ["https://www.jobs.nhs.uk", "NHS Jobs ↗"],
+      ["https://www.reed.co.uk", "Reed ↗"],
+      ["https://www.totaljobs.com", "Totaljobs ↗"],
+      ["https://www.cv-library.co.uk", "CV-Library ↗"],
+      ["https://www.linkedin.com/jobs", "LinkedIn Jobs ↗"],
+      ["https://www.healthjobsuk.com", "HealthJobsUK ↗"],
+      ["https://jobs.communitycare.co.uk", "Community Care Jobs ↗"],
+      ["https://jobs.theguardian.com", "Guardian Jobs ↗"],
+      ["https://www.adzuna.co.uk", "Adzuna ↗"],
+      ["https://www.jobsite.co.uk", "Jobsite ↗"],
+      ["https://www.simplyhired.co.uk", "SimplyHired ↗"],
+      ["https://uk.jooble.org", "Jooble ↗"],
+      ["https://www.ziprecruiter.co.uk", "ZipRecruiter ↗"],
+      ["https://www.carehome.co.uk/jobs", "Carehome.co.uk Jobs ↗"],
+      ["https://www.socialcare.co.uk", "Socialcare.co.uk ↗"]
     ]]
   ];
   function renderNav() {
     const cur = location.hash || "#/";
     const viewKey = (cur.match(/^#\/view\/([^/]+)/) || [])[1];
-    const RIGHT_GROUPS = ["Finance", "Reference", "Haverton Websites"];
+    const RIGHT_GROUPS = ["Finance", "Reference", "Haverton Websites", "Job Sites"];
     const renderGroup = ([g, items]) => `<div class="nav-group"><div class="nav-label">${esc(g)}</div>` +
       items.map(([href, label, temp]) => {
         const active = cur === href || (href !== "#/" && cur.startsWith(href + "/")) || (viewKey && href === "#/r/" + viewKey);
