@@ -274,6 +274,7 @@
     ["Haverton Websites", [
       ["https://operation.havertoncare.co.uk/apply/?src=preview", "Registration Page ↗"],
       ["https://operation.havertoncare.co.uk/finance/", "Finance Tool ↗"],
+      ["https://operation.havertoncare.co.uk/payroll/", "Payroll Calculator ↗"],
       ["https://operation.havertoncare.co.uk/care-costs/", "Family Cost Of Care Guide ↗"],
       ["https://havertoncare.co.uk/future-home-care/", "Home Care ↗"],
       ["https://havertoncare.co.uk/careers/", "Careers ↗"],
