@@ -1,4 +1,10 @@
-HAVERTON PAYROLL CALCULATOR
+HAVERTON PAYROLL CALCULATOR AND SETUP GUIDE
+
+This folder contains:
+- Haverton Payroll Calculator.html - the offline calculator (below).
+- Haverton Payroll Setup Guide.docx - how to set up and run real payroll: registering as an
+  employer, software, onboarding, each pay run, paying HMRC, pensions, year-end and
+  temporary staffing payroll, with a setup checklist.
 
 Double-click "Haverton Payroll Calculator.html" to open it in your web browser.
 It works offline, on a computer or phone. Nothing you type is saved or sent anywhere.
